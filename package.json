@@ -1,0 +1,25 @@
+{
+  "name": "finances",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhayjatindoshi/finances.git"
+  },
+  "keywords": [
+    "finances"
+  ],
+  "author": "Abhay Jatin Doshi <ajd1996@hotmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abhayjatindoshi/finances/issues"
+  },
+  "homepage": "https://github.com/abhayjatindoshi/finances#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
