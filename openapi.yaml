@@ -1,0 +1,53 @@
+openapi: "3.0.3"
+info:
+  title: Finances App APIs
+  version: "1.0"
+servers:
+  - url: /
+paths:
+  /test:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Account"
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        budgetCategory:
+          type: string
+        transactionType:
+          type: string
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        sourceAccountId:
+          type: object
+          $ref: "#/components/schemas/Account"
+        category:
+          type: string
+        timestamp:
+          type: integer
+        narration:
+          type: string
+        amount:
+          type: integer

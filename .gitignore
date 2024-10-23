@@ -128,3 +128,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# openapi generated code
+src/api
+
+# ignoring debugging configurations to skip uploading passwords
+.vscode
