@@ -130,7 +130,7 @@ dist
 .pnp.*
 
 # openapi generated code
-src/api
+src/generated
 
 # ignoring debugging configurations to skip uploading passwords
 .vscode
