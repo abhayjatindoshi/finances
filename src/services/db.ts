@@ -1,7 +1,7 @@
-import { ConnectionPool, IResult } from 'mssql';
+import { ConnectionPool, IResult, PreparedStatement } from 'mssql';
 
 class Db {
-    private pool: Promise<ConnectionPool>;
+    pool: Promise<ConnectionPool>;
 
     constructor(connectionString: string | undefined) {
         if (!connectionString) {
@@ -19,10 +19,25 @@ class Db {
             })
     }
 
-    async query(query: string): Promise<IResult<any>> {
+    async fetchAll<T>(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<Array<T>> {
+        let result = await this.query(queryTemplate, ...interpolations);
+        return result.recordset as Array<T>;
+    }
+
+    async fetchOne<T>(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<T | undefined> {
+        let result: Array<T> = await this.fetchAll(queryTemplate, ...interpolations);
+        return result.length > 0 ? result[0] : undefined;
+    }
+
+    async execute(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<number> {
+        let result = await this.query(queryTemplate, ...interpolations);
+        return result.rowsAffected[0];
+    }
+
+    private async query(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<IResult<any>> {
         let pool = await this.pool;
         let result = await pool.request()
-            .query(query);
+            .query(queryTemplate, ...interpolations);
         return result;
     }
 }

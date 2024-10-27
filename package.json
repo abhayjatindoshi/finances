@@ -25,12 +25,14 @@
   "homepage": "https://github.com/abhayjatindoshi/finances#readme",
   "description": "",
   "dependencies": {
-    "express": "^4.21.1",
+    "body-parser": "^1.20.3",
+    "express": "^5.0.1",
     "mssql": "^11.0.1",
     "request": "^2.88.2"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.14.0",
+    "@types/body-parser": "^1.19.5",
     "@types/express": "^5.0.0",
     "@types/mssql": "^9.1.5",
     "@types/request": "^2.48.12",

@@ -1,10 +1,12 @@
-import { Application, Router } from "express";
+import { Application, NextFunction, Router, Request, Response } from "express";
 import { lstatSync, readdirSync } from "fs";
 import path from "path";
+import ApiError from "./api-error";
 
 export function loadRouters(app: Application): void {
-    readdirSync(__dirname)
-        .map(folderName => path.join(__dirname, folderName))
+    const routesBaseFolder = path.join(__dirname, 'routes')
+    readdirSync(routesBaseFolder)
+        .map(folderName => path.join(routesBaseFolder, folderName))
         .filter(folderPath => lstatSync(folderPath).isDirectory())
         .forEach(folderPath => {
             readdirSync(folderPath)
@@ -29,4 +31,18 @@ function loadRouter(routerPath: string): [string, Router] {
     const routerUrl = `/api/${routerVersion}/${routerName}`;
     const router = require(routerPath).default;
     return [routerUrl, router];
+}
+
+export function errorHandler(err: any, req: Request, res: Response, next: NextFunction): void {
+    let apiError: ApiError
+
+    if (err instanceof ApiError) {
+        apiError = err;
+    } else {
+        apiError = new ApiError();
+        apiError.cause = err;
+    }
+
+    console.error(apiError.cause);
+    apiError.respond(res);
 }

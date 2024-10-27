@@ -7,7 +7,7 @@ servers:
 paths:
   /test:
     get:
-      operationId: 'test'
+      operationId: "test"
       responses:
         "200":
           description: OK
@@ -32,22 +32,48 @@ components:
           type: integer
         name:
           type: string
-        budgetCategory:
+        monthlyLimit:
+          type: integer
+        yearlyLimit:
+          type: integer
+        type:
           type: string
-        transactionType:
+          $ref: "#/components/schemas/CategoryType"
+        subCategories:
+          type: array
+          items:
+            $ref: "#/components/schemas/SubCategory"
+    CategoryType:
+      type: string
+      enum:
+        - Needs
+        - Wants
+        - Savings
+        - Income
+    SubCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
           type: string
+        categoryId:
+          type: integer
     Transaction:
       type: object
       properties:
         id:
           type: integer
-        sourceAccountId:
-          type: object
-          $ref: "#/components/schemas/Account"
-        category:
-          type: string
-        timestamp:
+        accountId:
           type: integer
+        categoryId:
+          type: integer
+        transferAccountId:
+          type: integer
+        timestamp:
+          type: string
+        title:
+          type: string
         narration:
           type: string
         amount:
