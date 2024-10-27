@@ -10,6 +10,7 @@ export default class ApiError extends Error {
 
     private statusCode: number;
     private code: ApiErrorCode;
+    cause: Error | undefined;
 
     constructor();
     constructor(statusCode: number, code: ApiErrorCode);
@@ -18,7 +19,9 @@ export default class ApiError extends Error {
         code: ApiErrorCode = ApiErrorCode.INTERNAL_ERROR,
         message: string = "Something went wrong. It\'s not you, probably us.",
         cause?: Error) {
-        super(message, cause);
+        super();
+        this.message = message;
+        this.cause = cause;
         this.statusCode = statusCode;
         this.code = code;
     }
