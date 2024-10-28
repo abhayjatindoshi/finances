@@ -33,7 +33,7 @@ export default function AccountPage() {
   function Transactions() {
     return <Table<Transaction> dataSource={transactions} >
       <Column title="ID" dataIndex="id" key="id" />
-      <Column title="SubCategory" dataIndex="subCategoryId" key="subCategoryId" render={(subCategoryId => subCategories?.filter(s => s.id == subCategoryId).at(0)?.name)} />
+      <Column title="SubCategory" dataIndex="subCategoryId" key="subCategoryId" render={(subCategoryId => subCategories?.filter(s => s.id === subCategoryId).at(0)?.name)} />
       <Column title="Timestamp" dataIndex="timestamp" key="timestamp" render={(timestamp: number) => moment.unix(timestamp / 1000).fromNow()} />
       <Column title="Title" dataIndex="title" key="title" />
       <Column title="Credit" dataIndex="amount" key="credit" render={(amount: number) => { return amount > 0 ? amount : '' }} />
