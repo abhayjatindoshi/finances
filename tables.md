@@ -15,7 +15,7 @@
 
 ## Transaction
 - accountId
-- categoryId
+- subCategoryId
 - transferAccountId
 - timestamp
 - title

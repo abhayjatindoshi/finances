@@ -4,12 +4,23 @@ import db from "../../services/db";
 import ApiError, { ApiErrorCode } from "../../api-error";
 import { getAccount } from "./accounts";
 import { getCategory } from "./categories";
-import { Account, Category } from "../../generated/model/models";
+import { Account, Category, SubCategory } from "../../generated/model/models";
+import { getSubCategory } from "./subcategories";
 
 const router: Router = express.Router();
 
 router.get('/', async (req, res) => {
-    const result: Transaction[] = await db.fetchAll`select top 100 * from Transactions`;
+    let template = ["select top 100 * from Transactions"];
+    let interpolations = [];
+    if (req.query.accountId) {
+        template.push(template.pop() + " where accountId = ")
+        interpolations.push(Number.parseInt(req.query.accountId as string));
+        template.push("")
+    }
+
+    const templateQuery: any = template as readonly string[];
+    templateQuery.raw = templateQuery
+    const result: Transaction[] = await db.fetchAll(templateQuery, ...interpolations)
     res.json(result);
 })
 
@@ -24,12 +35,12 @@ router.post('/', async (req, res) => {
     }
     let transaction = req.body as Transaction;
     if (!transaction.accountId) { throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "accountId not specified") }
-    if (!transaction.categoryId && !transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "categoryId and transferAccountId not specified") }
+    if (!transaction.subCategoryId && !transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "subCategoryId and transferAccountId not specified") }
     if (!transaction.timestamp) { throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "timestamp not specified.") }
     if (!transaction.title) { throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "title not specified") }
     if (!transaction.amount) { throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "amount not specified") }
 
-    if (transaction.categoryId && transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Cannot specify both categoryId and transferAccountId") }
+    if (transaction.subCategoryId && transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Cannot specify both subCategoryId and transferAccountId") }
 
     if (transaction.amount == 0) {
         throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Amount cannot be 0 for a transaction.");
@@ -38,9 +49,9 @@ router.post('/', async (req, res) => {
     let account = await getAccount(transaction.accountId);
     if (account === undefined) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Invalid account id specified") }
 
-    let category: Category | undefined;
-    if (transaction.categoryId) {
-        category = await getCategory(transaction.categoryId);
+    let category: SubCategory | undefined;
+    if (transaction.subCategoryId) {
+        category = await getSubCategory(transaction.subCategoryId);
         if (category == undefined) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Invalid category id specified") }
     }
 
@@ -53,9 +64,9 @@ router.post('/', async (req, res) => {
 
 
     let rowCount = await db.execute`insert into Transactions 
-        (accountId, categoryId, transferAccountId,
+        (accountId, subCategoryId, transferAccountId,
         timestamp, title, narration, amount) values
-        (${transaction.accountId}, ${transaction.categoryId}, ${transaction.transferAccountId},
+        (${transaction.accountId}, ${transaction.subCategoryId}, ${transaction.transferAccountId},
         ${transaction.timestamp}, ${transaction.title}, ${transaction.narration}, ${transaction.amount})`
     if (rowCount != 1) {
         throw ApiError.message("Failed to create transaction.");
@@ -91,14 +102,14 @@ router.patch("/:id", async (req, res) => {
         }
     }
 
-    if (requestTransaction.categoryId !== undefined) {
-        if (requestTransaction.categoryId != null && requestTransaction.categoryId != transaction.categoryId) {
-            let category = await getCategory(requestTransaction.categoryId);
-            if (category == undefined) {
-                throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Invalid category id specified.");
+    if (requestTransaction.subCategoryId !== undefined) {
+        if (requestTransaction.subCategoryId != null && requestTransaction.subCategoryId != transaction.subCategoryId) {
+            let subCategory = await getSubCategory(requestTransaction.subCategoryId);
+            if (subCategory == undefined) {
+                throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Invalid subCategory id specified.");
             }
         }
-        transaction.categoryId = requestTransaction.categoryId;
+        transaction.subCategoryId = requestTransaction.subCategoryId;
     }
 
     if (requestTransaction.transferAccountId !== undefined) {
@@ -111,12 +122,12 @@ router.patch("/:id", async (req, res) => {
         transaction.transferAccountId = requestTransaction.transferAccountId;
     }
 
-    if (transaction.categoryId && transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Cannot set both categoryId and transferAccountId") }
-    if (!transaction.categoryId && !transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "categoryId and transferAccountId cannot be null") }
+    if (transaction.subCategoryId && transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "Cannot set both subCategoryId and transferAccountId") }
+    if (!transaction.subCategoryId && !transaction.transferAccountId) { throw new ApiError(400, ApiErrorCode.INVALID_DATA, "subCategoryId and transferAccountId cannot be null") }
 
     let rowCount = await db.execute`update Transactions set
         accountId = ${transaction.accountId},
-        categoryId = ${transaction.categoryId},
+        subCategoryId = ${transaction.subCategoryId},
         transferAccountId = ${transaction.transferAccountId},
         title = ${transaction.title},
         narration = ${transaction.narration},

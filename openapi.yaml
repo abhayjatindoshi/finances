@@ -5,17 +5,310 @@ info:
 servers:
   - url: /
 paths:
-  /test:
+  /api/v1/accounts:
     get:
-      operationId: "test"
+      tags:
+        - Accounts
+      operationId: getAccounts
       responses:
-        "200":
+        200:
           description: OK
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+    post:
+      tags:
+        - Accounts
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Account"
+      responses:
+        201:
+          description: CREATED
+  /api/v1/accounts/{id}:
+    get:
+      tags:
+        - Accounts
+      operationId: getAccount
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
                 $ref: "#/components/schemas/Account"
+    patch:
+      tags:
+        - Accounts
+      operationId: updateAccount
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Account"
+      responses:
+        200:
+          description: OK
+    delete:
+      tags:
+        - Accounts
+      operationId: deleteAccount
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+  /api/v1/categories:
+    get:
+      tags:
+        - Categories
+      operationId: getCategories
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Account"
+    post:
+      tags:
+        - Categories
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Category"
+      responses:
+        201:
+          description: CREATED
+  /api/v1/categories/{id}:
+    get:
+      tags:
+        - Categories
+      operationId: getCategory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    patch:
+      tags:
+        - Categories
+      operationId: updateCategory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Category"
+      responses:
+        200:
+          description: OK
+    delete:
+      tags:
+        - Categories
+      operationId: deleteCategory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+  /api/v1/categories/{id}/subcategories:
+    post:
+      tags:
+        - SubCategories
+      operationId: CreateSubCategory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubCategory"
+      responses:
+        201:
+          description: CREATED
+  /api/v1/subcategories:
+    get:
+      tags:
+        - SubCategories
+      operationId: getSubCategories
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubCategory"
+  /api/v1/subcategories/{id}:
+    patch:
+      tags:
+        - SubCategories
+      operationId: UpdateSubCategory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubCategory"
+      responses:
+        200:
+          description: OK
+    delete:
+      tags:
+        - SubCategories
+      operationId: DeleteSubCategory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+  /api/v1/transactions:
+    get:
+      tags:
+        - Transactions
+      operationId: getTransactions
+      parameters:
+        - name: accountId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+    post:
+      tags:
+        - Transactions
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction"
+      responses:
+        201:
+          description: CREATED
+  /api/v1/transactions/{id}:
+    get:
+      tags:
+        - Transactions
+      operationId: getTransaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+    patch:
+      tags:
+        - Transactions
+      operationId: updateTransaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction"
+      responses:
+        200:
+          description: OK
+    delete:
+      tags:
+        - Transactions
+      operationId: deleteTransaction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
 components:
   schemas:
     Account:
@@ -66,7 +359,7 @@ components:
           type: integer
         accountId:
           type: integer
-        categoryId:
+        subCategoryId:
           type: integer
         transferAccountId:
           type: integer

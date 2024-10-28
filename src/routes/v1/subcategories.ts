@@ -6,6 +6,11 @@ import { getCategory } from "./categories";
 
 const router: Router = express.Router();
 
+router.get("/", async (req, res) => {
+    const result: SubCategory[] = await db.fetchAll`select * from SubCategories`;
+    res.json(result);
+})
+
 router.patch("/:id", async (req, res) => {
     if (!req.body) {
         throw new ApiError(400, ApiErrorCode.INVALID_DATA, "No body given to update.");
@@ -43,5 +48,10 @@ router.delete("/:id", async (req, res) => {
 
     res.sendStatus(200);
 })
+
+export async function getSubCategory(id: number): Promise<SubCategory | undefined> {
+    let result: SubCategory | undefined = await db.fetchOne`select * from SubCategories where id = ${id}`;
+    return result;
+}
 
 export default router;

@@ -26,7 +26,7 @@ create table Transactions
 (
     id int not null IDENTITY(1, 1) PRIMARY KEY,
     accountId int not null FOREIGN KEY REFERENCES Accounts(id),
-    categoryId int FOREIGN KEY REFERENCES Categories(id),
+    subCategoryId int FOREIGN KEY REFERENCES SubCategories(id),
     transferAccountId int FOREIGN KEY REFERENCES Accounts(id),
     title text not null,
     narration text,
