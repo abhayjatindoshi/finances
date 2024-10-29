@@ -10,6 +10,12 @@ router.get('/', async (req, res) => {
     res.json(result);
 });
 
+router.get('/', async (req, res) => {
+    const result = await db.fetchAll`(select accountId, sum(amount) as Total from Transactions group by accountId) as Transactions
+left join (select id, name, initialBalance from Accounts) on id = accountId
+`
+})
+
 router.get('/:id', async (req, res) => {
     const result = await getAccount(Number.parseInt(req.params['id']));
     res.json(result);

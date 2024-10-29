@@ -6,7 +6,8 @@ drop table if exists Transactions;
 create table Accounts
 (
     id int not null IDENTITY(1, 1) primary key,
-    name text not null
+    name text not null,
+    initialBalance int not null
 );
 create table Categories
 (
