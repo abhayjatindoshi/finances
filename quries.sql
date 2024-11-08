@@ -1,14 +1,14 @@
-drop table if exists accounts;
-drop table if exists categories;
-drop table if exists sub_categories;
-drop table if exists transactions;
 drop table if exists deleted_entities;
+drop table if exists transactions;
+drop table if exists sub_categories;
+drop table if exists categories;
+drop table if exists accounts;
 
 create table accounts
 (
     id VARCHAR(16) not null primary key,
     name text not null,
-    initial_balance int not null,
+    initial_balance float not null,
     created_at bigint not null,
     updated_at bigint not null
 );
@@ -16,8 +16,8 @@ create table categories
 (
     id VARCHAR(16) not null primary key,
     name text not null,
-    monthly_limit decimal,
-    yearly_limit decimal,
+    monthly_limit float,
+    yearly_limit float,
     type text not null,
     created_at bigint not null,
     updated_at bigint not null
@@ -39,7 +39,7 @@ create table transactions
     transaction_at bigint not null,
     title text not null,
     summary text not null,
-    amount decimal not null,
+    amount float not null,
     created_at bigint not null,
     updated_at bigint not null
 )

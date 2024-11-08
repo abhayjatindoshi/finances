@@ -39,6 +39,10 @@ class Db {
         return result.rowsAffected[0];
     }
 
+    async runInTransaction<T>(execute: (db: Db) => Promise<T>): Promise<T> {
+        return await execute(this)
+    }
+
     private async query(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<IResult<any>> {
         let pool = await this.pool;
         let result = await pool.request()

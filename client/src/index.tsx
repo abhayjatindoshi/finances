@@ -10,7 +10,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <ConfigProvider theme={{
-      algorithm: [theme.defaultAlgorithm, theme.compactAlgorithm],
+      algorithm: [theme.darkAlgorithm, theme.compactAlgorithm],
       cssVar: true,
       components: {
         Layout: {
