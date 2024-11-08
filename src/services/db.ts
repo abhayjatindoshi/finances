@@ -36,7 +36,7 @@ class Db {
 
     async execute(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<number> {
         let result = await this.query(queryTemplate, ...interpolations);
-        return result.rowsAffected[0];
+        return result.rowsAffected.reduce((prev, rows) => prev + rows);
     }
 
     async runInTransaction<T>(execute: (db: Db) => Promise<T>): Promise<T> {

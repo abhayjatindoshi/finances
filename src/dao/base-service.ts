@@ -44,8 +44,8 @@ export default abstract class BaseService<M extends Model> {
         })
     }
 
-    public async create(entities: Array<M>) {
-        if (entities.length == 0) return;
+    public async create(entities: Array<M> | undefined) {
+        if (!entities || entities.length == 0) return;
         let sanitized = entities.map(this.sanitize).map(this.validate);
 
         let keys = Object.keys(sanitized[0]);
@@ -63,9 +63,37 @@ export default abstract class BaseService<M extends Model> {
     }
 
 
-    public async update(entities: Array<M>) {
+    public async update(entities: Array<M> | undefined) {
+        if (!entities || entities.length == 0) return;
+        let sanitized = entities.map(this.sanitize).map(this.validate);
+
+        let keys = Object.keys(sanitized[0]);
+        let vars = sanitized.map(entity => [...keys.map(key => (entity as any)[key]), entity.id]).flat();
+        let query = entities.map(_ => `update ${this.entityName} 
+            set ${keys.map(key => `${key} = ?`).join(', ')} where id = ?;`)
+            .join(' ').split('?');
+
+        let rows = await db.execute(templateString(query), ...vars)
+        if (rows != sanitized.length) {
+            throw new Error('Failed to update row.');
+        }
     }
 
-    public async delete(ids: Array<string>) {
+    public async delete(ids: Array<string> | undefined) {
+        if (!ids || ids.length == 0) return;
+        console.log(ids);
+        let query = [
+            `insert into deleted_entities (entity_type, entity_id, deleted_at) values (`,
+            Array(ids.length - 1).fill('), ('),
+            `); delete from ${this.entityName} where id in (`,
+            ');'
+        ].flat();
+        let vars = ids.map(id => [this.entityName, id, Date.now()]);
+        vars.push(ids);
+
+        let rows = await db.execute(templateString(query), ...vars)
+        if (rows < ids.length) {
+            throw new Error('Failed to delete row.');
+        }
     }
 }

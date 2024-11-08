@@ -11,7 +11,10 @@ export async function sync() {
       return response;
     },
     pushChanges: async ({ changes, lastPulledAt }): Promise<SyncPushResult> => {
-      let response: SyncPushResult = {}
+      let response = await fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
+        method: 'POST',
+        body: JSON.stringify(changes)
+      }).then(res => res.json()) as SyncPushResult;
       return response;
     }
   });
