@@ -1,29 +1,28 @@
-import './App.css';
 import { Layout } from 'antd';
 import Toolbar from './layout/Toolbar';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import DashboardPage from './pages/DashboardPage';
-import AccountPage from './pages/AccountPage';
+import { Outlet } from 'react-router-dom';
+import { sync } from './db/sync';
+import { useEffect } from 'react';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
 function App() {
+
+  useEffect(() => {
+    sync();
+    setInterval(() => {
+      sync();
+    }, 60000);
+  }, []);
+
   return (
-    <Layout>
+    <Layout className='min-h-screen'>
+      <Content className='overflow-auto app-content-height'>
+        <Outlet />
+      </Content>
       <Header>
         <Toolbar />
       </Header>
-      <Content>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" Component={DashboardPage} />
-            <Route path="/accounts/:id" Component={AccountPage} />
-          </Routes>
-        </BrowserRouter>
-      </Content>
-      <Footer className="text-center text-sm">
-        Finances&#174; 2024 | Created with 🤍 by <a href="https://encryptorcode.github.io/" rel='noopener noreferrer' target='_blank'>Abhay Jatin Doshi</a>
-      </Footer>
     </Layout>
   );
 }

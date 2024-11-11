@@ -32,6 +32,18 @@ paths:
       responses:
         201:
           description: CREATED
+  /api/v1/accounts/balances:
+    get:
+      tags:
+        - Accounts
+      operationId: GetAccountBalances
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
   /api/v1/accounts/{id}:
     get:
       tags:

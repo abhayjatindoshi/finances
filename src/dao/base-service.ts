@@ -24,7 +24,7 @@ export default abstract class BaseService<M extends Model> {
 
     public async pull(lastPulledAt: number): Promise<Changes<M>> {
         const created = db.fetchAny(templateString(['select * from ' + this.entityName + ' where created_at >= ', '']), lastPulledAt);
-        const updated = db.fetchAny(templateString(['select * from ' + this.entityName + ' where created_at != updated_at and updated_at >= ', '']), lastPulledAt);
+        const updated = db.fetchAny(templateString(['select * from ' + this.entityName + ' where created_at < ', ' and updated_at >= ', '']), lastPulledAt, lastPulledAt);
         const deleted = db.fetchAny`select * from deleted_entities where convert(varchar,entity_type) = ${this.entityName} and deleted_at >= ${lastPulledAt}`;
 
         return Promise.all([created, updated, deleted])

@@ -1,11 +1,15 @@
 @tailwind components;
 @tailwind utilities;
 
-html, head, body {
+html,
+head,
+body {
   margin: 0;
   padding: 0;
   border: 0;
   outline: none;
+  background-color: black;
+
 }
 
 a {
@@ -15,4 +19,13 @@ a {
 
 svg {
   fill: currentColor;
+}
+
+.app-content-height {
+  height: calc(100vh - var(--ant-layout-header-height));
+  overflow: auto;
+}
+
+.settings-categories-list-item li {
+  line-height: 2rem;
 }

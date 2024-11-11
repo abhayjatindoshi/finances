@@ -6,14 +6,26 @@ import ApiError, { ApiErrorCode } from "../../api-error";
 const router: Router = express.Router();
 
 router.get('/', async (req, res) => {
-    const result: Account[] = await db.fetchAll`select * from Accounts`;
+    const result = await getAccounts();
     res.json(result);
 });
 
-router.get('/', async (req, res) => {
-    const result = await db.fetchAll`(select accountId, sum(amount) as Total from Transactions group by accountId) as Transactions
-left join (select id, name, initialBalance from Accounts) on id = accountId
-`
+router.get('/balances', async (req, res) => {
+    const accounts = await getAccounts();
+    const balances: Map<number, number> = accounts.reduce((map: Map<number, number>, account: Account) => {
+        if (!account.id || account.initialBalance === undefined) return map;
+        map.set(account.id, account.initialBalance);
+        return map;
+    }, new Map<number, number>());
+    const result = await db.fetchAny`select  accountId, sum(amount) as total from Transactions group by accountId`;
+    result.forEach(row => {
+        if (balances.has(row.accountId)) {
+            let totalBalance = balances.get(row.accountId) ?? 0;
+            totalBalance += row.total;
+            balances.set(row.accountId, totalBalance)
+        }
+    })
+    res.json(Object.fromEntries(balances));
 })
 
 router.get('/:id', async (req, res) => {
@@ -26,7 +38,7 @@ router.post('/', async (req, res) => {
         throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "Name is not specified");
     }
 
-    let rowCount = await db.execute`insert into Accounts (name) values (${req.body.name})`
+    let rowCount = await db.execute`insert into Accounts(name) values(${req.body.name})`
     if (rowCount != 1) {
         throw ApiError.message("Failed to create account.");
     }
@@ -38,7 +50,7 @@ router.patch('/:id', async (req, res) => {
         throw new ApiError(400, ApiErrorCode.FIELD_MISSING, "Name is not specified");
     }
 
-    let rowsAffected = await db.execute`update Accounts set name = ${req.body.name} where id = ${Number.parseInt(req.params.id)}`
+    let rowsAffected = await db.execute`update Accounts set name = ${req.body.name} where id = ${Number.parseInt(req.params.id)} `
     if (rowsAffected != 1) {
         throw ApiError.message('Failed to update account.');
     }
@@ -47,7 +59,7 @@ router.patch('/:id', async (req, res) => {
 })
 
 router.delete('/:id', async (req, res) => {
-    let rowsAffected = await db.execute`delete from Accounts where id = ${Number.parseInt(req.params.id)}`
+    let rowsAffected = await db.execute`delete from Accounts where id = ${Number.parseInt(req.params.id)} `
     if (rowsAffected != 1) {
         throw ApiError.message('Failed to delete account.');
     }
@@ -56,8 +68,13 @@ router.delete('/:id', async (req, res) => {
 })
 
 export async function getAccount(id: number): Promise<Account | undefined> {
-    let account: Account | undefined = await db.fetchOne`select * from Accounts where id = ${id}`
+    let account: Account | undefined = await db.fetchOne`select * from Accounts where id = ${id} `
     return account;
+}
+
+export async function getAccounts(): Promise<Account[]> {
+    let accounts: Account[] = await db.fetchAll`select * from Accounts`
+    return accounts;
 }
 
 export default router;
