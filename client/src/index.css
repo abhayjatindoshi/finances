@@ -1,3 +1,4 @@
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -9,7 +10,6 @@ body {
   border: 0;
   outline: none;
   background-color: black;
-
 }
 
 a {

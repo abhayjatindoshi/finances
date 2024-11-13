@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import Account from '../../../db/models/Account';
-import { Database } from '@nozbe/watermelondb';
+import { Database, Q } from '@nozbe/watermelondb';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import TableName from '../../../db/TableName';
 import { List, Typography } from 'antd';
@@ -37,7 +37,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
   );
 };
 const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query()
+  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
 }));
 const EnhancedAccountBalances = withDatabase(enhance(AccountBalances));
 export default EnhancedAccountBalances;

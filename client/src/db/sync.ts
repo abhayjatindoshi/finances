@@ -8,6 +8,7 @@ export async function sync() {
   await synchronize({
     database,
     pullChanges: async (args: SyncPullArgs): Promise<SyncPullResult> => {
+      if (isRunning) throw new Error('Sync already in progress');
       isRunning = true;
       let urlParams = new URLSearchParams(args as any).toString();
       let response = await fetch(`/api/v1/sync/pull?${urlParams}`, { method: 'POST' })
@@ -16,6 +17,7 @@ export async function sync() {
       return response;
     },
     pushChanges: async ({ changes, lastPulledAt }): Promise<SyncPushResult> => {
+      if (isRunning) throw new Error('Sync already in progress');
       isRunning = true;
       let response = await fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
         method: 'POST',

@@ -6,7 +6,7 @@ const BudgetSettingsPage: React.FC = () => {
 
   return (
     <div className='flex'>
-      <div className='flex-1 app-content-height'>
+      <div className='w-96 app-content-height'>
         <EnhancedCategorySettingsList />
       </div>
       <div className='flex-1 app-content-height'>

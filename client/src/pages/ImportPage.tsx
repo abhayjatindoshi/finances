@@ -8,6 +8,7 @@ import Tranasction from '../db/models/Transaction';
 import Account from '../db/models/Account';
 import { sync } from '../db/sync';
 import Category, { CategoryType } from '../db/models/Category';
+import SubCategory from '../db/models/SubCategory';
 
 const { Dragger } = Upload;
 
@@ -40,16 +41,21 @@ export default function ImportPage() {
   }
 
   async function doSomething() {
-    let entities = [{ "name": "Bills", "type": "Needs", "monthly_limit": 0, "yearly_limit": 40000 }, { "name": "Cashback", "type": "Income", "monthly_limit": 0, "yearly_limit": 0 }, { "name": "Charity", "type": "Wants", "monthly_limit": 0, "yearly_limit": 10000 }, { "name": "Commute", "type": "Needs", "monthly_limit": 3000, "yearly_limit": 0 }, { "name": "Family Contribution", "type": "Needs", "monthly_limit": 15000, "yearly_limit": 0 }, { "name": "Gold", "type": "Savings", "monthly_limit": 0, "yearly_limit": 200000 }, { "name": "Home Appliances", "type": "Wants", "monthly_limit": 0, "yearly_limit": 100000 }, { "name": "Home Expenses", "type": "Needs", "monthly_limit": 10000, "yearly_limit": 0 }, { "name": "Home Loan", "type": "Needs", "monthly_limit": 125000, "yearly_limit": 0 }, { "name": "House Rent", "type": "Needs", "monthly_limit": 30000, "yearly_limit": 0 }, { "name": "Interest", "type": "Income", "monthly_limit": 0, "yearly_limit": 0 }, { "name": "Lifestyle", "type": "Wants", "monthly_limit": 10000, "yearly_limit": 0 }, { "name": "PPF", "type": "Savings", "monthly_limit": 5000, "yearly_limit": 0 }, { "name": "Salary", "type": "Income", "monthly_limit": 0, "yearly_limit": 0 }, { "name": "Spends", "type": "Needs", "monthly_limit": 0, "yearly_limit": 0 }, { "name": "Stocks", "type": "Savings", "monthly_limit": 0, "yearly_limit": 240000 }, { "name": "Tax", "type": "Needs", "monthly_limit": 0, "yearly_limit": 300000 }, { "name": "Travel", "type": "Wants", "monthly_limit": 0, "yearly_limit": 100000 }];
-    let categories = database.collections.get<Category>('categories');
+    let entities = [{"sub":"Electricity", "category":"Bills"},{"sub":"Gas", "category":"Bills"},{"sub":"Internet", "category":"Bills"},{"sub":"Mobile Recharge", "category":"Bills"},{"sub":"Cashback", "category":"Cashback"},{"sub":"Charity", "category":"Charity"},{"sub":"Commute", "category":"Commute"},{"sub":"Petrol", "category":"Commute"},{"sub":"Jigna HDFC", "category":"Family Contribution"},{"sub":"Gold", "category":"Gold"},{"sub":"Home Appliances", "category":"Home Appliances"},{"sub":"Grocery", "category":"Home Expenses"},{"sub":"Home Maintenance", "category":"Home Expenses"},{"sub":"Medical", "category":"Home Expenses"},{"sub":"Packers and Movers", "category":"Home Expenses"},{"sub":"SBI Home Loan", "category":"Home Loan"},{"sub":"House Rent", "category":"House Rent"},{"sub":"Bank Interest", "category":"Interest"},{"sub":"Dining", "category":"Lifestyle"},{"sub":"Gift", "category":"Lifestyle"},{"sub":"Movie", "category":"Lifestyle"},{"sub":"Outing", "category":"Lifestyle"},{"sub":"Parlour", "category":"Lifestyle"},{"sub":"Shopping", "category":"Lifestyle"},{"sub":"Abhay HDFC PPF A/C", "category":"PPF"},{"sub":"Microsoft", "category":"Salary"},{"sub":"Abhay Spends", "category":"Spends"},{"sub":"Anjali Spends", "category":"Spends"},{"sub":"Eshita ICICI A/C", "category":"Spends"},{"sub":"Eshita Spends", "category":"Spends"},{"sub":"Kanak Jewellers BOB A/C", "category":"Spends"},{"sub":"Mummy Spends", "category":"Spends"},{"sub":"Papa Spends", "category":"Spends"},{"sub":"Raj Spends", "category":"Spends"},{"sub":"Shubh Spends", "category":"Spends"},{"sub":"Shah Family Spends", "category":"Spends"},{"sub":"Vini HDFC A/C", "category":"Spends"},{"sub":"Abhay PayTM Bank A/C", "category":"Spends"},{"sub":"Sharekhan", "category":"Stocks"},{"sub":"Income Tax", "category":"Tax"},{"sub":"Property Tax", "category":"Tax"},{"sub":"Abhay Fi A/C", "category":"Transfer"},{"sub":"Abhay HDFC A/C", "category":"Transfer"},{"sub":"Abhay Jupiter A/C", "category":"Transfer"},{"sub":"Eshita Jupiter A/C", "category":"Transfer"},{"sub":"Train Tickets", "category":"Travel"}];
+    let categories = await database.collections.get<Category>('categories').query().fetch();
+    let subCategories = await database.collections.get<SubCategory>('sub_categories');
     await database.write(async () => {
       entities.forEach(entity => {
-        categories.create((newCategory) => {
-          newCategory.name = entity.name;
-          newCategory.type = entity.type as CategoryType;
-          newCategory.monthlyLimit = entity.monthly_limit;
-          newCategory.yearlyLimit = entity.yearly_limit;
-        })
+        let name = entity.sub;
+        let category = categories.find(category => category.name === entity.category);
+        if (!category) {
+          console.log('Unable to find category', entity.category);
+          return;
+        }
+        subCategories.create((subCategory) => {
+          subCategory.name = name;
+          subCategory.category.set(category!);
+        });
       });
     });
     await sync();

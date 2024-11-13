@@ -1,19 +1,29 @@
 import { Layout } from 'antd';
-import Toolbar from './layout/Toolbar';
+import Toolbar from './toolbar/Toolbar';
 import { Outlet } from 'react-router-dom';
 import { sync } from './db/sync';
 import { useEffect } from 'react';
+import { createGlobalVariable } from './utils/GlobalVariable';
 
 const { Header, Content } = Layout;
 
 function App() {
 
+  const isScreenLandscape = createGlobalVariable<boolean>('isScreenLandscape');
+
   useEffect(() => {
-    sync();
     setInterval(() => {
       sync();
     }, 60000);
-  }, []);
+
+
+    const resizeHelper = () => {
+      const { innerWidth, innerHeight } = window;
+      isScreenLandscape.next(innerWidth > innerHeight);
+    }
+    window.addEventListener('resize', resizeHelper);
+    resizeHelper();
+  }, [isScreenLandscape]);
 
   return (
     <Layout className='min-h-screen'>

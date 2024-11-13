@@ -1,4 +1,4 @@
-import { Database } from '@nozbe/watermelondb';
+import { Database, Q } from '@nozbe/watermelondb';
 import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
 import React from 'react';
 import Category, { CategoryType } from '../../../db/models/Category';
@@ -55,7 +55,7 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
 };
 
 const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>('categories').query(),
+  categories: database.collections.get<Category>('categories').query(Q.sortBy('name')),
 }));
 const EnhancedCategorySettingsList = withDatabase(enhance(CategorySettingsList));
 export default EnhancedCategorySettingsList;

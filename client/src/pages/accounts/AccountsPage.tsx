@@ -2,7 +2,7 @@ import { Dropdown, MenuProps } from 'antd';
 import React, { useEffect } from 'react';
 import Account from '../../db/models/Account';
 import { DownOutlined } from '@ant-design/icons';
-import { Database } from '@nozbe/watermelondb';
+import { Database, Q } from '@nozbe/watermelondb';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import TableName from '../../db/TableName';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -62,7 +62,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts }) => {
 
 
 const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query()
+  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
 }));
 const EnhancedAccountsPage = withDatabase(enhance(AccountsPage));
 export default EnhancedAccountsPage;

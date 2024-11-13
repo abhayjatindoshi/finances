@@ -14,10 +14,10 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div className='flex flex-row'>
-      <div className='basis-1/5 app-content-height'>
+      <div className='basis-1/6 app-content-height'>
         <SettingsList />
       </div>
-      <div className='flex-grow app-content-height'>
+      <div className='basis-5/6 app-content-height'>
         <Outlet />
       </div>
     </div>

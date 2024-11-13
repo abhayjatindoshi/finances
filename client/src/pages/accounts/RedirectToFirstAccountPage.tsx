@@ -1,4 +1,4 @@
-import { Database } from '@nozbe/watermelondb';
+import { Database, Q } from '@nozbe/watermelondb';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
 import TableName from '../../db/TableName';
@@ -25,7 +25,7 @@ const RedirectToFirstAccountPage: React.FC<RedirectToFirstAccountPageProps> = ({
 };
 
 const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query()
+  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
 }));
 const EnhancedRedirectToFirstAccountPage = withDatabase(enhance(RedirectToFirstAccountPage));
 export default EnhancedRedirectToFirstAccountPage;
