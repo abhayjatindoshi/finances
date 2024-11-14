@@ -9,7 +9,6 @@ import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import Money from '../../common/Money';
 
-
 interface TransactionsListProps {
   account: Account,
   transactions: Array<Transaction>
@@ -38,9 +37,9 @@ const TransactionsList: React.FC<TransactionsListProps> = ({ account, transactio
         <Column title={t('app.subCategory')} dataIndex="subCategoryId" key="subCategoryId" />
         <Column title={t('app.time')} dataIndex="transactionAt" key="transactionAt" render={(transactionAt: Date) => moment(transactionAt).fromNow()} />
         <Column title={t('app.title')} dataIndex="title" key="title" />
-        <Column title={t('app.withdraw')} dataIndex="amount" key="withdraw" render={(amount: number) => { return amount < 0 ? <Money amount={(-amount)} /> : '' }} />
-        <Column title={t('app.deposit')} dataIndex="amount" key="deposit" render={(amount: number) => { return amount > 0 ? <Money amount={(amount)} /> : '' }} />
-        <Column title={t('app.balance')} dataIndex="balance" key="balance" render={(balance: number) => <Money amount={balance} />} />
+        <Column title={t('app.withdraw')} dataIndex="amount" key="withdraw" className='text-right' render={(amount: number) => amount < 0 ? <Money amount={-amount} /> : ''} />
+        <Column title={t('app.deposit')} dataIndex="amount" key="deposit" className='text-right' render={(amount: number) => { return amount > 0 ? <Money amount={(amount)} /> : '' }} />
+        <Column title={t('app.balance')} dataIndex="balance" key="balance" className='text-right' render={(balance: number) => <Money amount={balance} />} />
       </Table>
     </div>
   );

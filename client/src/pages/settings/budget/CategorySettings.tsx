@@ -1,15 +1,16 @@
-import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Category, { CategoryType, CategoryType as EnumCategoryType } from '../../../db/models/Category';
-import { Database } from '@nozbe/watermelondb';
-import TableName from '../../../db/TableName';
-import { Input, Popconfirm, Segmented, Select, Tag } from 'antd';
 import { CloseCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
-import IconButton from '../../../common/IconButton';
-import SubCategory from '../../../db/models/SubCategory';
-import database from '../../../db/database';
+import { Input, Popconfirm, Segmented, Select } from 'antd';
+import { Q, Database } from '@nozbe/watermelondb';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
+import Category, { CategoryType, CategoryType as EnumCategoryType } from '../../../db/models/Category';
+import database from '../../../db/database';
+import IconButton from '../../../common/IconButton';
+import React, { useEffect, useState } from 'react';
+import SubCategory from '../../../db/models/SubCategory';
+import SubCategoryPill from './SubCategoryPill';
+import TableName from '../../../db/TableName';
 
 interface CategorySettingsProps {
   categories: Array<Category>
@@ -17,13 +18,14 @@ interface CategorySettingsProps {
 }
 
 interface RawCategory {
+  id: string;
   name: string;
   limit: number;
   limitType: 'monthly' | 'yearly';
   type: string;
 }
 
-const defaultCategory: RawCategory = { name: '', limit: 0, limitType: 'monthly', type: EnumCategoryType.Needs };
+const defaultCategory: RawCategory = { id: '', name: '', limit: 0, limitType: 'monthly', type: EnumCategoryType.Needs };
 
 const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubCategories }) => {
   const { t } = useTranslation();
@@ -49,6 +51,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
     }
 
     setCategory({
+      id: category.id,
       name: category.name,
       limit: category.monthlyLimit > 0 ? category.monthlyLimit : category.yearlyLimit,
       limitType: category.monthlyLimit > 0 ? 'monthly' : 'yearly',
@@ -157,11 +160,10 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
       </div>
       <div>
         <div className='text-lg'>{t('app.subCategories')}</div>
-        <div className='flex flex-row flex-wrap gap-2'>
+        <div className='flex flex-row flex-wrap gap-2 my-2'>
+          <SubCategoryPill key='new' categoryId={category.id} />
           {subCategories.map(subCategory => (
-            <Tag className='text-sm' key={subCategory.id} closable>
-              {subCategory.name}
-            </Tag>
+            <SubCategoryPill key={subCategory.id} subCategory={subCategory} categoryId={category.id} />
           ))}
         </div>
       </div>
@@ -170,8 +172,8 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
 };
 
 const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>(TableName.Categories).query(),
-  allSubCategories: database.collections.get<SubCategory>(TableName.SubCategories).query()
+  categories: database.collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  allSubCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
 }));
 const EnhancedCategorySettings = withDatabase(enhance(CategorySettings));
 export default EnhancedCategorySettings;

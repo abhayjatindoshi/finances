@@ -32,15 +32,15 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   }
 
   function avatarBackground(category: Category): string {
-    let backgroundColor = 'var(--ant-blue-7)';
+    let backgroundColor = 'var(--ant-blue-5)';
     if (category.type === CategoryType.Income) {
-      backgroundColor = 'var(--ant-blue-7)';
+      backgroundColor = 'var(--ant-blue-5)';
     } else if (category.type === CategoryType.Needs) {
-      backgroundColor = 'var(--ant-green-7)';
+      backgroundColor = 'var(--ant-green-5)';
     } else if (category.type === CategoryType.Wants) {
-      backgroundColor = 'var(--ant-yellow-7)';
+      backgroundColor = 'var(--ant-yellow-5)';
     } else if (category.type === CategoryType.Savings) {
-      backgroundColor = 'var(--ant-red-7)';
+      backgroundColor = 'var(--ant-red-5)';
     }
     return backgroundColor;
   }

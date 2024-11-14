@@ -14,7 +14,7 @@ function App() {
   useEffect(() => {
     setInterval(() => {
       sync();
-    }, 60000);
+    }, 6000);
 
 
     const resizeHelper = () => {

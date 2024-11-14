@@ -17,9 +17,9 @@ export default function Toolbar() {
   return (
     <>
       <div className="flex items-center justify-center gap-12 h-12 text-xl">
-        <MenuItem icon={<HomeOutlined />} title={t('home')} link="/" hideTitle={isPortrait} />
-        <MenuItem icon={<BookOutlined />} title="Accounts" link="/accounts" hideTitle={isPortrait} />
-        <MenuItem icon={<SettingOutlined />} title="Settings" link="/settings" hideTitle={isPortrait} />
+        <MenuItem icon={<HomeOutlined />} title={t('app.home')} link="/" hideTitle={isPortrait} />
+        <MenuItem icon={<BookOutlined />} title={t('app.accounts')} link="/accounts" hideTitle={isPortrait} />
+        <MenuItem icon={<SettingOutlined />} title={t('app.settings')} link="/settings" hideTitle={isPortrait} />
       </div>
     </>
   )

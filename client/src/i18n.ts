@@ -4,6 +4,8 @@ import { initReactI18next } from "react-i18next"
 const resources = {
   en: {
     translation: {
+      'app.accounts': 'Accounts',
+      'app.add': 'Add',
       'app.balance': 'Balance',
       'app.budget': 'Budget',
       'app.budgetLimit': 'Budget Limit',
