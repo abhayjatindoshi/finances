@@ -3,6 +3,8 @@ import Account from '../../db/models/Account';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { Statistic } from 'antd';
 import { getCurrentAccountBalance } from '../../utils/DbUtils';
+import { useTranslation } from 'react-i18next';
+import Money from '../../common/Money';
 
 interface CurrentBalanceProps {
   account: Account
@@ -11,17 +13,18 @@ interface CurrentBalanceProps {
 const CurrentBalance: React.FC<CurrentBalanceProps> = ({ account }) => {
 
   const [balance, setBalance] = React.useState<number | undefined>();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (account) {
-      getCurrentAccountBalance(account).then((balance) => {
+      getCurrentAccountBalance(account).then(async (balance) => {
         setBalance(balance);
       });
     }
   }, [account]);
 
   return (
-    <Statistic title='Current Balance' className='text-right' loading={balance == undefined} value={balance} prefix="₹" />
+    <Statistic title={t('app.currentBalance')} className='text-right' loading={balance === undefined} valueRender={() => <Money amount={balance} />} />
   );
 };
 

@@ -5,7 +5,6 @@ import ErrorPage from "./pages/ErrorPage";
 import EnhancedTestPage from "./pages/TestPage";
 import EnhancedRedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountPage";
 import EnhancedAccountsPage from "./pages/accounts/AccountsPage";
-import ImportPage from "./pages/ImportPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
 import AccountSettingsPage from "./pages/settings/account/AccountSettingsPage";
@@ -25,9 +24,6 @@ const router = createBrowserRouter([
       }, {
         path: 'accounts/:id',
         element: <EnhancedAccountsPage />,
-      }, {
-        path: 'import',
-        element: <ImportPage />
       }, {
         path: 'settings',
         element: <SettingsPage />,
@@ -49,7 +45,10 @@ const router = createBrowserRouter([
       }, {
         path: 'test',
         element: <EnhancedTestPage />
+      }, {
+        element: <ErrorPage />
       }
+
     ],
     errorElement: <ErrorPage />
   }

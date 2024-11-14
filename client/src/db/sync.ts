@@ -10,8 +10,12 @@ export async function sync() {
     pullChanges: async (args: SyncPullArgs): Promise<SyncPullResult> => {
       if (isRunning) throw new Error('Sync already in progress');
       isRunning = true;
-      let urlParams = new URLSearchParams(args as any).toString();
-      let response = await fetch(`/api/v1/sync/pull?${urlParams}`, { method: 'POST' })
+      const urlParams = new URLSearchParams({
+        lastPulledAt: args.lastPulledAt?.toString() || '',
+        schemaVersion: args.schemaVersion.toString(),
+        migration: JSON.stringify(args.migration)
+      }).toString();
+      const response = await fetch(`/api/v1/sync/pull?${urlParams}`, { method: 'POST' })
         .then(res => res.json()) as SyncPullResult;
       isRunning = false;
       return response;
@@ -19,7 +23,7 @@ export async function sync() {
     pushChanges: async ({ changes, lastPulledAt }): Promise<SyncPushResult> => {
       if (isRunning) throw new Error('Sync already in progress');
       isRunning = true;
-      let response = await fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
+      const response = await fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
         method: 'POST',
         body: JSON.stringify(changes),
         headers: { 'Content-Type': 'application/json' }

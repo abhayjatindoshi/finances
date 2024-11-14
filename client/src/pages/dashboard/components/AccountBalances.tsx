@@ -5,6 +5,7 @@ import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import TableName from '../../../db/TableName';
 import { List, Typography } from 'antd';
 import { getCurrentAccountBalance } from '../../../utils/DbUtils';
+import Money from '../../../common/Money';
 
 interface AccountBalancesProps {
   accounts: Array<Account>;
@@ -17,7 +18,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
   useEffect(() => {
     const fetchBalances = async () => {
       const balances = new Map<string, number>();
-      for (let account of accounts) {
+      for (const account of accounts) {
         balances.set(account.id, await getCurrentAccountBalance(account));
       }
       setBalanceMap(balances);
@@ -30,7 +31,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
       <List.Item>
         <div className='flex flex-row items-center w-full'>
           <Typography.Text className='grow text-lg' ellipsis={true}>{account.name}</Typography.Text>
-          <div className='text-sm text-nowrap'>₹ {balanceMap.get(account.id)}</div>
+          <div className='text-sm text-nowrap'><Money amount={balanceMap.get(account.id)} /></div>
         </div>
       </List.Item>
     )} />

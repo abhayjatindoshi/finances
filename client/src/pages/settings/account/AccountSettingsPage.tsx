@@ -1,9 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const AccountSettingsPage: React.FC = () => {
+
+  const { t } = useTranslation();
+
   return (
     <div>
-      Account Settings Page
+      {t('app.myAccount')}
     </div>
   );
 };

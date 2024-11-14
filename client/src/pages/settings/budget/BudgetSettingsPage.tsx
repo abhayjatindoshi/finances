@@ -10,7 +10,7 @@ const BudgetSettingsPage: React.FC = () => {
         <EnhancedCategorySettingsList />
       </div>
       <div className='flex-1 app-content-height'>
-        <Outlet />
+        <Outlet key="asd" />
       </div>
     </div>
   );

@@ -5,6 +5,6 @@ export function unsubscribeAll(...subscriptions: Subscription[]): () => void {
     subscriptions.forEach(subscription => {
       try {
         subscription.unsubscribe();
-      } catch (_) { }
+      } catch { /* empty */ }
     });
 }

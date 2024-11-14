@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { FC } from 'react'
 import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
 import { Database } from '@nozbe/watermelondb';
@@ -6,7 +7,6 @@ import database from '../db/database';
 import { sync } from '../db/sync';
 import TableName from '../db/TableName';
 import Account from '../db/models/Account';
-import EnhancedAccountCard from './dashboard/components/AccountCard';
 
 interface InputProps {
   accounts: Array<Account>
@@ -27,7 +27,6 @@ const TestPage: FC<InputProps> = ({ accounts }) => {
   return <>
     <div>TestPage</div>
     <div className='flex flex-row flex-wrap gap-4'>
-      {accounts.map((account: any) => <EnhancedAccountCard key={account.id} account={account} balances={{ 'a1': 99234.213 }} />)}
     </div>
     {accounts.map((account: Account) => <div key={account.id}>
       <span>{account.id}</span>-
