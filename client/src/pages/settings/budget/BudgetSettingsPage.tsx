@@ -1,0 +1,19 @@
+import React from 'react';
+import EnhancedCategorySettingsList from './CategorySettingsList';
+import { Outlet } from 'react-router-dom';
+
+const BudgetSettingsPage: React.FC = () => {
+
+  return (
+    <div className='flex'>
+      <div className='w-96 app-content-height'>
+        <EnhancedCategorySettingsList />
+      </div>
+      <div className='flex-1 app-content-height'>
+        <Outlet key="asd" />
+      </div>
+    </div>
+  );
+};
+
+export default BudgetSettingsPage;

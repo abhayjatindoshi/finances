@@ -17,8 +17,8 @@ export function loadRouters(app: Application): void {
                         const [routerUrl, router] = loadRouter(routerPath);
                         app.use(routerUrl, router);
                         console.log(`Router loaded: ${routerUrl}`);
-                    } catch (e) {
-                        console.error(`Failed to load router: ${routerPath} : ${e}`);
+                    } catch (e: any) {
+                        console.error(`Failed to load router: ${routerPath} : ${e} : ${e.stack}`);
                     }
                 })
         })
@@ -45,4 +45,10 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
 
     console.error(apiError.cause);
     apiError.respond(res);
+}
+
+export function templateString(template: string[]): TemplateStringsArray {
+    const templateStringsArray: any = template as readonly string[];
+    templateStringsArray.raw = templateStringsArray;
+    return templateStringsArray;
 }

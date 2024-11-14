@@ -29,9 +29,18 @@ class Db {
         return result.length > 0 ? result[0] : undefined;
     }
 
+    async fetchAny(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<Array<any>> {
+        let result = this.query(queryTemplate, ...interpolations);
+        return (await result).recordset as Array<any>
+    }
+
     async execute(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<number> {
         let result = await this.query(queryTemplate, ...interpolations);
-        return result.rowsAffected[0];
+        return result.rowsAffected.reduce((prev, rows) => prev + rows);
+    }
+
+    async runInTransaction<T>(execute: (db: Db) => Promise<T>): Promise<T> {
+        return await execute(this)
     }
 
     private async query(queryTemplate: TemplateStringsArray, ...interpolations: any[]): Promise<IResult<any>> {

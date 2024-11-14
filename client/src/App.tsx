@@ -1,29 +1,38 @@
-import './App.css';
 import { Layout } from 'antd';
-import Toolbar from './layout/Toolbar';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import DashboardPage from './pages/DashboardPage';
-import AccountPage from './pages/AccountPage';
+import Toolbar from './toolbar/Toolbar';
+import { Outlet } from 'react-router-dom';
+import { sync } from './db/sync';
+import { useEffect } from 'react';
+import { createGlobalVariable } from './utils/GlobalVariable';
 
-const { Header, Content, Footer } = Layout;
+const { Header, Content } = Layout;
 
 function App() {
+
+  const isScreenLandscape = createGlobalVariable<boolean>('isScreenLandscape');
+
+  useEffect(() => {
+    setInterval(() => {
+      sync();
+    }, 60000);
+
+
+    const resizeHelper = () => {
+      const { innerWidth, innerHeight } = window;
+      isScreenLandscape.next(innerWidth > innerHeight);
+    }
+    window.addEventListener('resize', resizeHelper);
+    resizeHelper();
+  }, [isScreenLandscape]);
+
   return (
-    <Layout>
+    <Layout className='min-h-screen'>
+      <Content className='overflow-auto app-content-height'>
+        <Outlet />
+      </Content>
       <Header>
         <Toolbar />
       </Header>
-      <Content>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" Component={DashboardPage} />
-            <Route path="/accounts/:id" Component={AccountPage} />
-          </Routes>
-        </BrowserRouter>
-      </Content>
-      <Footer className="text-center text-sm">
-        Finances&#174; 2024 | Created with 🤍 by <a href="https://encryptorcode.github.io/" rel='noopener noreferrer' target='_blank'>Abhay Jatin Doshi</a>
-      </Footer>
     </Layout>
   );
 }

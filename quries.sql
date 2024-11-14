@@ -1,35 +1,51 @@
-drop table if exists Accounts;
-drop table if exists Categories;
-drop table if exists SubCategories;
-drop table if exists Transactions;
+drop table if exists deleted_entities;
+drop table if exists transactions;
+drop table if exists sub_categories;
+drop table if exists categories;
+drop table if exists accounts;
 
-create table Accounts
+create table accounts
 (
-    id int not null IDENTITY(1, 1) primary key,
-    name text not null
-);
-create table Categories
-(
-    id int not null IDENTITY(1, 1) PRIMARY KEY,
+    id VARCHAR(16) not null primary key,
     name text not null,
-    monthlyLimit DECIMAL,
-    yearlyLimit DECIMAL,
-    type text not null
+    initial_balance float not null,
+    created_at bigint not null,
+    updated_at bigint not null
 );
-create table SubCategories
+create table categories
 (
-    id int not null IDENTITY(1, 1) PRIMARY KEY,
+    id VARCHAR(16) not null primary key,
     name text not null,
-    categoryId int not null FOREIGN KEY REFERENCES Categories(id)
+    monthly_limit float,
+    yearly_limit float,
+    type text not null,
+    created_at bigint not null,
+    updated_at bigint not null
 );
-create table Transactions
+create table sub_categories
 (
-    id int not null IDENTITY(1, 1) PRIMARY KEY,
-    accountId int not null FOREIGN KEY REFERENCES Accounts(id),
-    subCategoryId int FOREIGN KEY REFERENCES SubCategories(id),
-    transferAccountId int FOREIGN KEY REFERENCES Accounts(id),
+    id VARCHAR(16) not null primary key,
+    name text not null,
+    category_id VARCHAR(16) not null FOREIGN KEY REFERENCES categories(id),
+    created_at bigint not null,
+    updated_at bigint not null
+);
+create table transactions
+(
+    id VARCHAR(16) not null primary key,
+    account_id VARCHAR(16) not null FOREIGN KEY REFERENCES accounts(id),
+    transfer_account_id VARCHAR(16) FOREIGN KEY REFERENCES accounts(id),
+    sub_category_id VARCHAR(16) FOREIGN KEY REFERENCES sub_categories(id),
+    transaction_at bigint not null,
     title text not null,
-    narration text,
-    amount int not null,
-    timestamp bigint not null
+    summary text not null,
+    amount float not null,
+    created_at bigint not null,
+    updated_at bigint not null
+)
+create table deleted_entities
+(
+    entity_type text not null,
+    entity_id text not null,
+    deleted_at bigint not null
 )
