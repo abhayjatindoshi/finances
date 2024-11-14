@@ -4,16 +4,18 @@ import { BehaviorSubject, Subscription } from "rxjs";
 const variables = new Map<string, BehaviorSubject<any>>();
 
 export function createGlobalVariable<T>(name: string, initialValue?: T | undefined): BehaviorSubject<T> {
-  if (!variables.has(name)) {
-    const subject = new BehaviorSubject(initialValue);
+  let subject = variables.get(name)
+  if (!subject) {
+    subject = new BehaviorSubject(initialValue);
     variables.set(name, subject);
   }
-  return variables.get(name)!;
+  return subject;
 }
 
 export function subscribeTo<T>(name: string, callback: (value: T) => void): Subscription {
-  if (!variables.has(name)) {
+  const subject = variables.get(name);
+  if (!subject) {
     return new Subscription();
   }
-  return variables.get(name)!.subscribe(callback);
+  return subject.subscribe(callback);
 }

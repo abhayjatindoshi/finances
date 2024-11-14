@@ -159,7 +159,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
         <div className='text-lg'>{t('app.subCategories')}</div>
         <div className='flex flex-row flex-wrap gap-2'>
           {subCategories.map(subCategory => (
-            <Tag className='text-sm' key={subCategory.id} closable onClose={() => { }}>
+            <Tag className='text-sm' key={subCategory.id} closable>
               {subCategory.name}
             </Tag>
           ))}

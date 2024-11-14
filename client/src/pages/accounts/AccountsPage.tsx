@@ -32,7 +32,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts }) => {
         setAccount(selectedAccount);
       }
     }
-  }, [id]);
+  }, [id, accounts]);
 
   const onAccountChange: MenuProps['onClick'] = ({ key }) => {
     const selectedAccount = accounts.find(account => account.id === key);
