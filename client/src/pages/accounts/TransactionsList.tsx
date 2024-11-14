@@ -16,8 +16,8 @@ interface TransactionsListProps {
 }
 
 class EntendedTransaction extends Transaction {
-  index: number = 0;
-  balance: number = 0;
+  index = 0;
+  balance = 0;
 }
 
 const TransactionsList: React.FC<TransactionsListProps> = ({ account, transactions }) => {

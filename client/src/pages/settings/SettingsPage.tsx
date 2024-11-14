@@ -10,7 +10,7 @@ const SettingsPage: React.FC = () => {
     if (location.pathname === '/settings') {
       navigate('/settings/account');
     }
-  }, [location.pathname]);
+  }, [location.pathname, navigate]);
 
   return (
     <div className='flex flex-row'>

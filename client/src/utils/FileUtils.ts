@@ -22,7 +22,8 @@ const readExcelFile = (file: ArrayBuffer): Array<string[][]> => {
   const workbook = read(file);
   for (const i in workbook.SheetNames) {
     const sheet = workbook.Sheets[workbook.SheetNames[i]];
-    const range = utils.decode_range(sheet["!ref"]!)
+    if(!sheet["!ref"]) continue;
+    const range = utils.decode_range(sheet["!ref"])
     const allRows: string[][] = [];
     for (let rowIndex = 0; rowIndex <= range.e.r; rowIndex++) {
       const row: string[] = [];

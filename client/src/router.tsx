@@ -2,7 +2,6 @@ import { createBrowserRouter } from "react-router-dom";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import App from "./App";
 import ErrorPage from "./pages/ErrorPage";
-import EnhancedTestPage from "./pages/TestPage";
 import EnhancedRedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountPage";
 import EnhancedAccountsPage from "./pages/accounts/AccountsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
@@ -42,9 +41,6 @@ const router = createBrowserRouter([
             ]
           }
         ]
-      }, {
-        path: 'test',
-        element: <EnhancedTestPage />
       }, {
         element: <ErrorPage />
       }
