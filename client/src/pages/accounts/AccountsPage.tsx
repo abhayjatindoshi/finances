@@ -7,7 +7,7 @@ import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import TableName from '../../db/TableName';
 import { useNavigate, useParams } from 'react-router-dom';
 import EnhancedCurrentBalance from './CurrentBalance';
-import EnhancedTransactionsList from './TransactionsList';
+import EnhancedTransactionSheet from './TransactionSheet';
 
 interface AccountsPageProps {
   accounts: Array<Account>;
@@ -54,7 +54,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts }) => {
           </div>
           {account ? <EnhancedCurrentBalance account={account} /> : null}
         </div>
-        {account ? <div className='grow overflow-auto'><EnhancedTransactionsList account={account} /></div> : null}
+        {account ? <div className='grow overflow-auto'><EnhancedTransactionSheet account={account} /></div> : null}
       </div>
     </>
   );
