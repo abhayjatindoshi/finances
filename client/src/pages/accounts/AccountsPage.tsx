@@ -1,13 +1,16 @@
-import { Dropdown, MenuProps } from 'antd';
+import { Drawer, Dropdown, MenuProps } from 'antd';
 import React, { useEffect } from 'react';
 import Account from '../../db/models/Account';
-import { DownOutlined } from '@ant-design/icons';
+import { DownOutlined, PlusOutlined } from '@ant-design/icons';
 import { Database, Q } from '@nozbe/watermelondb';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import TableName from '../../db/TableName';
 import { useNavigate, useParams } from 'react-router-dom';
 import EnhancedCurrentBalance from './CurrentBalance';
 import EnhancedTransactionsList from './TransactionsList';
+import IconButton from '../../common/IconButton';
+import { useTranslation } from 'react-i18next';
+import ImportPage from './import/ImportPage';
 
 interface AccountsPageProps {
   accounts: Array<Account>;
@@ -22,8 +25,10 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts }) => {
     label: account.name
   }));
 
+  const { t } = useTranslation();
   const { id } = useParams();
   const [account, setAccount] = React.useState<Account | undefined>();
+  const [importDrawerOpen, setImportDrawerOpen] = React.useState<boolean>(false);
 
   useEffect(() => {
     if (id && accounts && accounts.length > 0) {
@@ -44,7 +49,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts }) => {
   return (
     <>
       <div className='pt-2 px-2 flex flex-col app-content-height'>
-        <div className='flex'>
+        <div className='flex items-center gap-6'>
           <div className='grow'>
             <Dropdown menu={{ items, onClick: onAccountChange }} >
               <div className='text-xl w-96'>
@@ -52,10 +57,17 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts }) => {
               </div>
             </Dropdown>
           </div>
+          <div className='flex flex-col gap-2'>
+            <IconButton icon={<PlusOutlined />} onClick={() => setImportDrawerOpen(true)}>{t('app.import')}</IconButton>
+            <IconButton icon={<PlusOutlined />} disabled>{t('app.add')}</IconButton>
+          </div>
           {account && <EnhancedCurrentBalance account={account} />}
         </div>
         {account && <div className='grow overflow-auto'><EnhancedTransactionsList account={account} /></div>}
       </div>
+      <Drawer title={t('app.import')} closable={false} size='large' placement='right' onClose={() => setImportDrawerOpen(false)} open={importDrawerOpen}>
+        {account && <ImportPage account={account} onClose={() => setImportDrawerOpen(false)} />}
+      </Drawer>
     </>
   );
 };

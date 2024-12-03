@@ -22,6 +22,7 @@ const resources = {
       'app.home': 'Home',
       'app.id': 'Id',
       'app.income': 'Income',
+      'app.import': 'Import',
       'app.monthly': 'Monthly',
       'app.myAccount': 'My Account',
       'app.needs': 'Needs',
@@ -39,6 +40,18 @@ const resources = {
       'app.withdraw': 'Withdraw',
       'app.yearly': 'Yearly',
       'app.yes': 'Yes',
+      'app.jupiter': 'Jupiter Bank',
+      'app.hdfc': 'HDFC Bank',
+      'app.selectFormat': 'Select format',
+      'app.detectedFormat': 'Detected format',
+      'app.detectingFormat': 'Detecting type of the file...',
+      'app.formatNotDetected': 'Format not detected',
+      'app.uploadText': 'Click or drag file to this area to upload',
+      'app.uploadHint': 'Supports upload of single file only',
+      'app.continue': 'Continue',
+      'app.readingTransactions': 'Reading transactions',
+      'app.transactionsImported': 'transactions imported',
+      'app.close': 'Close',
     }
   }
 }
