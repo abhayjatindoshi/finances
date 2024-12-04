@@ -6,16 +6,18 @@ import { unsubscribeAll } from '../utils/ComponentUtils';
 
 interface IconButtonProps {
   type?: ButtonType;
+  size?: 'small' | 'middle' | 'large';
   color?: ButtonColorType;
   danger?: boolean;
   icon: ReactNode;
   loading?: boolean;
   formAction?: string;
+  disabled?: boolean;
   onClick?: MouseEventHandler | undefined
   children: ReactNode
 }
 
-const BudgetSettingsPage: React.FC<IconButtonProps> = ({ type, color, danger, icon, loading, formAction, onClick, children }) => {
+const IconButton: React.FC<IconButtonProps> = ({ type, size, color, danger, icon, loading, formAction, disabled, onClick, children }) => {
 
   const [showContent, setShowContent] = useState(true);
 
@@ -28,15 +30,17 @@ const BudgetSettingsPage: React.FC<IconButtonProps> = ({ type, color, danger, ic
   return (
     <Button
       type={type}
+      size={size}
       color={color}
       danger={danger}
       icon={icon}
       loading={loading}
       formAction={formAction}
+      disabled={disabled}
       onClick={onClick}>
       {showContent && children}
     </Button>
   );
 };
 
-export default BudgetSettingsPage;
+export default IconButton;

@@ -1,10 +1,17 @@
 import { read, utils } from "xlsx";
 import moment from "moment";
-import Transaction from "../db/models/Transaction";
-import database from "../db/database";
 
 export enum ImportFormat {
-  JUPITER
+  JUPITER,
+  HDFC
+}
+
+export interface RawTransaction {
+  id: number;
+  transactionAt: Date;
+  title: string;
+  summary: string;
+  amount: number;
 }
 
 const readUploadedFile = async (file: File): Promise<ArrayBuffer> => {
@@ -17,12 +24,12 @@ const readUploadedFile = async (file: File): Promise<ArrayBuffer> => {
   })
 }
 
-const readExcelFile = (file: ArrayBuffer): Array<string[][]> => {
+const excelBufferToSheets = (file: ArrayBuffer): Array<string[][]> => {
   const convertedSheets = new Array<string[][]>();
   const workbook = read(file);
   for (const i in workbook.SheetNames) {
     const sheet = workbook.Sheets[workbook.SheetNames[i]];
-    if(!sheet["!ref"]) continue;
+    if (!sheet["!ref"]) continue;
     const range = utils.decode_range(sheet["!ref"])
     const allRows: string[][] = [];
     for (let rowIndex = 0; rowIndex <= range.e.r; rowIndex++) {
@@ -38,28 +45,73 @@ const readExcelFile = (file: ArrayBuffer): Array<string[][]> => {
   return convertedSheets;
 }
 
-export const importStatementFromExcel = async (format: ImportFormat, file: File): Promise<Transaction[]> => {
+export const readExcelFile = async (file: File): Promise<Array<string[][]>> => {
   const stream = await readUploadedFile(file);
-  const sheets = readExcelFile(stream);
+  return excelBufferToSheets(stream);
+}
+
+export const readTransactionsFromWorksheet = async (format: ImportFormat, worksheet: Array<string[][]>): Promise<RawTransaction[]> => {
   switch (format) {
-    case ImportFormat.JUPITER: return importJupiterFormat(sheets);
+    case ImportFormat.JUPITER: return importJupiterFormat(worksheet);
+    case ImportFormat.HDFC: return importHdfcFormat(worksheet);
   }
 }
 
-const importJupiterFormat = async (sheets: Array<string[][]>): Promise<Transaction[]> => {
-  const transactions: Transaction[] = [];
-  for (let i = 0; i < sheets.length; i++) {
-    const sheet = sheets[i];
+export const detectImportFormat = (workbook: Array<string[][]>): (ImportFormat | undefined) => {
+  for (let i = 0; i < workbook.length; i++) {
+    const sheet = workbook[i];
     for (let rowIndex = 0; rowIndex < sheet.length; rowIndex++) {
       const row = sheet[rowIndex];
-      if (!/[0-9]{2}\/[0-9]{2}\/[0-9]{4}/.test(row[0])) continue;
-      const t = database.collections.get<Transaction>('transactions');
+      if (row[0].toUpperCase().indexOf('HDFC') !== -1) {
+        return ImportFormat.HDFC;
+      }
 
-      const transaction = await t.create(r => r)
-      transaction.transactionAt = moment(row[0], 'DD/MM/YYYY').toDate();
-      transaction.title = row[2];
-      transaction.summary = row[2];
-      transaction.amount = parseFloatNumber(row[6]) - parseFloatNumber(row[5]);
+      if (row.filter(c => c.toUpperCase().indexOf('JUPITER') !== -1).length > 0) {
+        return ImportFormat.JUPITER;
+      }
+    }
+  }
+  return undefined;
+}
+
+const importJupiterFormat = (sheets: Array<string[][]>): RawTransaction[] => {
+  const transactions: RawTransaction[] = [];
+  for (let i = 0; i < sheets.length; i++) {
+    const sheet = sheets[i];
+    let index = 0;
+    for (let rowIndex = 0; rowIndex < sheet.length; rowIndex++) {
+      const row = sheet[rowIndex];
+      if (!/^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/.test(row[0])) continue;
+
+      const transaction = {
+        id: index++,
+        transactionAt: moment(row[0], 'DD/MM/YYYY').toDate(),
+        title: row[2],
+        summary: row[2],
+        amount: parseFloatNumber(row[6]) - parseFloatNumber(row[5])
+      }
+      transactions.push(transaction);
+    }
+  }
+  return transactions;
+}
+
+const importHdfcFormat = (sheets: Array<string[][]>): RawTransaction[] => {
+  const transactions: RawTransaction[] = [];
+  for (let i = 0; i < sheets.length; i++) {
+    const sheet = sheets[i];
+    let index = 0;
+    for (let rowIndex = 0; rowIndex < sheet.length; rowIndex++) {
+      const row = sheet[rowIndex];
+      if (!/^[0-9]{2}\/[0-9]{2}\/[0-9]{2}$/.test(row[0])) continue;
+
+      const transaction = {
+        id: index++,
+        transactionAt: moment(row[0], 'DD/MM/YY').toDate(),
+        title: row[1],
+        summary: row[1],
+        amount: parseFloatNumber(row[5]) - parseFloatNumber(row[4])
+      }
       transactions.push(transaction);
     }
   }
