@@ -1,8 +1,10 @@
 import Transaction from "../../db/models/Transaction";
 import SubCategory from "../../db/models/SubCategory";
+import React from "react";
 import database from "../../db/database";
 import Account from "../../db/models/Account";
 import { withObservables } from "@nozbe/watermelondb/react";
+import { useTranslation } from "react-i18next";
 import { useForceUpdate } from "../../utils/ComponentUtils";
 import { ReactGrid, Column, Row, DefaultCellTypes, CellChange } from "@silevis/reactgrid";
 import { Q } from '@nozbe/watermelondb';
@@ -10,7 +12,6 @@ import { convertToTransactionRows, updateTransaction } from "../../utils/Transac
 import { BaseOptionType } from "antd/es/select";
 import { AntDropdownCellTemplate, AntDropdownCell } from "./templates/AntDropdownCellTemplate";
 import "@silevis/reactgrid/styles.css";
-import React from "react";
 
 interface TransactionSheetProps {
   account: Account
@@ -22,6 +23,7 @@ interface TransactionSheetProps {
 
 const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactions, subCategories, accounts, refresh }) => {
 
+  const { t } = useTranslation();
   const forceUpdate = useForceUpdate();
   const [widthFactor, setWidthFactor] = React.useState(0);
   const elementRef = React.useRef<HTMLDivElement>(null);
@@ -63,13 +65,13 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     rowId: 'header',
     height: 35,
     cells: [
-      { type: 'header', text: 'Id' },
-      { type: 'header', text: 'Classification' },
-      { type: 'header', text: 'Date' },
-      { type: 'header', text: 'Title' },
-      { type: 'header', text: 'Withdraw' },
-      { type: 'header', text: 'Deposit' },
-      { type: 'header', text: 'Balance' },
+      { type: 'header', text: t('app.id') },
+      { type: 'header', text: t('app.subCategory') },
+      { type: 'header', text: t('app.time') },
+      { type: 'header', text: t('app.title') },
+      { type: 'header', text: t('app.withdraw') },
+      { type: 'header', text: t('app.deposit') },
+      { type: 'header', text: t('app.balance') },
     ]
   }
 
