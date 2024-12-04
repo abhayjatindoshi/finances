@@ -29,3 +29,39 @@ svg {
 .settings-categories-list-item li {
   line-height: 2rem;
 }
+
+/***************** React Grid Overrides ****************/
+.rg-cell {
+  border: 0 !important;
+  border-bottom: var(--ant-line-width) var(--ant-line-type) var(--ant-color-border) !important;
+  color: var(--ant-color-text) !important;
+  line-height: var(--ant-line-height) !important;
+  font-size: var(--ant-font-size) !important;
+}
+
+.rg-header-cell {
+  background-color: unset !important;
+}
+
+.rg-pane {
+  background-color: var(--ant-color-bg-container) !important;
+}
+
+.rg-pane-top {
+  background-color: var(--ant-color-bg-elevated) !important;
+  border-top-left-radius: var(--ant-border-radius) !important;
+  border-top-right-radius: var(--ant-border-radius) !important;
+}
+
+.rg-classification-celleditor {
+  padding: 0;
+}
+
+.rg-ant-dropdown-editor-wrapper {
+  width: calc(100% + 4px) !important;
+  height: 100% !important;
+}
+
+.rg-ant-dropdown-editor-wrapper .ant-select-selector {
+  border-radius: 0 !important;
+}
