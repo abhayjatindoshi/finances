@@ -1,4 +1,4 @@
-import { ConnectionPool, IResult, PreparedStatement } from 'mssql';
+import { ConnectionPool, IResult } from 'mssql';
 
 class Db {
     pool: Promise<ConnectionPool>;
@@ -47,6 +47,16 @@ class Db {
         let pool = await this.pool;
         let result = await pool.request()
             .query(queryTemplate, ...interpolations);
+
+        const bigintColumns = Object.entries(result.recordset.columns)
+            .filter(([_, column]) => typeof column.type === 'function' && column.type.name === 'BigInt')
+
+        result.recordset.map(row => {
+            return bigintColumns.reduce((prev, [key, _]) => {
+                prev[key] = parseInt(row[key])
+                return prev;
+            }, row)
+        })
         return result;
     }
 }

@@ -25,7 +25,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
 
   const { t } = useTranslation();
   const forceUpdate = useForceUpdate();
-  const [widthFactor, setWidthFactor] = React.useState(0);
+  const [totalWidth, setTotalWidth] = React.useState(0);
   const elementRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -34,7 +34,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
         const elementWidth = elementRef.current.offsetWidth;
         const elementScrollWidth = elementRef.current.scrollWidth;
         const width = elementWidth - (elementScrollWidth - elementWidth);
-        setWidthFactor(width / 100);
+        setTotalWidth(width);
       }
     }
 
@@ -51,14 +51,15 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     label: a.name
   }))];
 
+  
   const columns: Column[] = [
-    { columnId: 'id', width: 2 * widthFactor, resizable: false, },
-    { columnId: 'classification', width: 10 * widthFactor, resizable: true, },
-    { columnId: 'date', width: 7 * widthFactor, resizable: true, },
-    { columnId: 'title', width: 55 * widthFactor, resizable: true, },
-    { columnId: 'withdraw', width: 7 * widthFactor, resizable: true, },
-    { columnId: 'deposit', width: 7 * widthFactor, resizable: true, },
-    { columnId: 'balance', width: 10 * widthFactor, resizable: true, },
+    { columnId: 'id', width: 40, resizable: false, },
+    { columnId: 'classification', width: 150, resizable: true, },
+    { columnId: 'date', width: 150, resizable: true, },
+    { columnId: 'title', width: totalWidth - 750, resizable: true, },
+    { columnId: 'withdraw', width: 100, resizable: true, },
+    { columnId: 'deposit', width: 100, resizable: true, },
+    { columnId: 'balance', width: 150, resizable: true, },
   ];
 
   const headerRow: Row = {
