@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "main": "dist/app.js",
   "scripts": {
-    "start": "node dist/app.js",
-    "build": "npm run generate && npm run tsc",
+    "start": "npm install && node dist/app.js",
+    "build": "npm run tsc",
     "tsc": "tsc",
     "dev": "ts-node-dev --respawn --pretty --transpile-only app.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "generate": "openapi-generator-cli generate -i openapi.yaml -g typescript-node -o src/generated"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -31,7 +30,6 @@
     "request": "^2.88.2"
   },
   "devDependencies": {
-    "@openapitools/openapi-generator-cli": "^2.14.0",
     "@types/body-parser": "^1.19.5",
     "@types/express": "^5.0.0",
     "@types/mssql": "^9.1.5",
