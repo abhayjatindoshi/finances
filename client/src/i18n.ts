@@ -4,12 +4,14 @@ import { initReactI18next } from "react-i18next"
 const resources = {
   en: {
     translation: {
+      'app.account': 'Account',
       'app.accounts': 'Accounts',
       'app.add': 'Add',
       'app.balance': 'Balance',
       'app.budget': 'Budget',
       'app.budgetLimit': 'Budget Limit',
       'app.cancel': 'Cancel',
+      'app.cannotDelete': 'Cannot delete this {{entity}}. Found {{count}} transactions linked to it.',
       'app.categories': 'Pockets',
       'app.category': 'Pocket',
       'app.close': 'Close',
@@ -29,6 +31,7 @@ const resources = {
       'app.id': 'Id',
       'app.import': 'Import',
       'app.income': 'Income',
+      'app.initialBalance': 'Initial Balance',
       'app.jupiter': 'Jupiter Bank',
       'app.monthly': 'Monthly',
       'app.myAccount': 'My Account',

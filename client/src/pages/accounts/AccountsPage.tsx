@@ -84,7 +84,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
 
 const enhance = withObservables([], ({ database }: { database: Database }) => ({
   accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
-  allTransactions: database.collections.get<Tranasction>(TableName.Tranasctions).query(Q.sortBy('transactionAt', 'desc'))
+  allTransactions: database.collections.get<Tranasction>(TableName.Transactions).query(Q.sortBy('transactionAt', 'desc'))
 }));
 const EnhancedAccountsPage = withDatabase(enhance(AccountsPage));
 export default EnhancedAccountsPage;

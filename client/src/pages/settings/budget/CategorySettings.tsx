@@ -11,6 +11,7 @@ import React, { useEffect, useState } from 'react';
 import SubCategory from '../../../db/models/SubCategory';
 import SubCategoryPill from './SubCategoryPill';
 import TableName from '../../../db/TableName';
+import Tranasction from '../../../db/models/Transaction';
 
 interface CategorySettingsProps {
   categories: Array<Category>
@@ -35,6 +36,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [saving, setSaving] = useState(false);
   const [edit, setEdit] = useState(false);
+  const [totalDependencyCount, setTotalDependencyCount] = useState<number>(0);
 
   useEffect(() => {
 
@@ -61,9 +63,14 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
     const subCategories = allSubCategories?.filter(subCategory => subCategory.category.id === categoryId);
     setSubCategories(subCategories);
 
+    database.collections.get<Tranasction>(TableName.Transactions)
+      .query(Q.where('sub_category_id', Q.oneOf(subCategories.map(s => s.id))))
+      .fetchCount().then(setTotalDependencyCount);
+
   }, [categoryId, categories, allSubCategories, navigate]);
 
   function deleteCategory() {
+    if (totalDependencyCount > 0) return;
     database.write(async () => {
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
@@ -135,8 +142,13 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
                 onConfirm={deleteCategory}
                 placement='leftBottom'
                 okText={t('app.yes')}
+                okButtonProps={{ disabled: totalDependencyCount > 0 }}
                 cancelText={t('app.no')}>
-                <IconButton danger icon={<DeleteOutlined />}>{t('app.delete')}</IconButton>
+                <IconButton danger icon={<DeleteOutlined />}
+                  disabled={totalDependencyCount > 0}
+                  tooltip={totalDependencyCount > 0 ? t('app.cannotDelete', { entity: t('app.category').toLowerCase(), count: totalDependencyCount }) : ''}>
+                  {t('app.delete')}
+                </IconButton>
               </Popconfirm>
             </>
           }

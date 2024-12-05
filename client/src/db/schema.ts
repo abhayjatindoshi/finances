@@ -34,7 +34,7 @@ export const schema = appSchema({
             ]
         }),
         tableSchema({
-            name: TableName.Tranasctions,
+            name: TableName.Transactions,
             columns: [
                 { name: 'account_id', type: 'string' },
                 { name: 'transfer_account_id', type: 'string', isOptional: true },

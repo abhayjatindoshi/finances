@@ -1,4 +1,4 @@
-import { BookOutlined, HomeOutlined, SettingOutlined } from "@ant-design/icons";
+import { BankOutlined, HomeOutlined, SettingOutlined } from "@ant-design/icons";
 import MenuItem from "./MenuItem";
 import { useState, useEffect } from "react";
 import { subscribeTo } from "../utils/GlobalVariable";
@@ -16,9 +16,9 @@ export default function Toolbar() {
 
   return (
     <>
-      <div className="flex items-center justify-center gap-12 h-12 text-xl">
-        <MenuItem icon={<HomeOutlined />} title={t('app.home')} link="/" hideTitle={isPortrait} />
-        <MenuItem icon={<BookOutlined />} title={t('app.accounts')} link="/accounts" hideTitle={isPortrait} />
+      <div className="flex items-end justify-center gap-12 h-12 text-xl">
+        <MenuItem icon={<HomeOutlined />} title={t('app.home')} link="/dashboard" hideTitle={isPortrait} />
+        <MenuItem icon={<BankOutlined />} title={t('app.accounts')} link="/accounts" hideTitle={isPortrait} />
         <MenuItem icon={<SettingOutlined />} title={t('app.settings')} link="/settings" hideTitle={isPortrait} />
       </div>
     </>

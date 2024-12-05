@@ -3,7 +3,7 @@ import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
 import React, { ReactNode } from 'react';
 import Category, { CategoryType } from '../../../db/models/Category';
 import { Avatar, List } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
@@ -16,7 +16,9 @@ interface CategorySettingsListProps {
 const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories }) => {
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  const selectedCategoryId = location.pathname.split('/').pop();
 
   function description(category: Category): ReactNode {
     if (category.monthlyLimit) {
@@ -54,12 +56,19 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
         </IconButton>
       </div>
       <List itemLayout='horizontal' dataSource={categories} renderItem={category => (
-        <List.Item className='cursor-pointer hover:bg-slate-900' onClick={() => navigate('/settings/budget/' + category.id)}>
+        <List.Item className='cursor-pointer selection-hover'
+          style={{
+            backgroundColor: selectedCategoryId === category.id ? 'var(--ant-blue-1)' : '',
+            color: selectedCategoryId === category.id ? 'var(--ant-blue-6)' : ''
+          }}
+          onClick={() => navigate('/settings/budget/' + category.id)}>
           <div className='flex flex-row items-center mx-3'>
             <Avatar size={'large'} shape='square' style={{ backgroundColor: avatarBackground(category) }}>{category.type.charAt(0)}</Avatar>
             <div className='flex flex-col ml-3 gap-1'>
               <div>{category.name}</div>
-              <div className='text-xs text-gray-400'>{description(category)}</div>
+              <div className='text-xs' style={{
+                color: selectedCategoryId === category.id ? 'var(--ant-blue-5)' : 'var(--ant-color-text-tertiary)'
+              }}>{description(category)}</div>
             </div>
           </div>
         </List.Item>

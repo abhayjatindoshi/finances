@@ -6,8 +6,10 @@ import EnhancedRedirectToFirstAccountPage from "./pages/accounts/RedirectToFirst
 import EnhancedAccountsPage from "./pages/accounts/AccountsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
-import AccountSettingsPage from "./pages/settings/account/AccountSettingsPage";
+import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
 import EnhancedCategorySettings from "./pages/settings/budget/CategorySettings";
+import HomePage from "./pages/HomePage";
+import AccountSettings from "./pages/settings/accounts/AccountSettings";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +17,11 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: '',
+        path: '/',
+        element: <HomePage />
+      },
+      {
+        path: 'dashboard',
         element: <DashboardPage />,
       }, {
         path: 'accounts',
@@ -28,8 +34,14 @@ const router = createBrowserRouter([
         element: <SettingsPage />,
         children: [
           {
-            path: 'account',
-            element: <AccountSettingsPage />
+            path: 'accounts',
+            element: <AccountsSettingsPage />,
+            children: [
+              {
+                path: ':accountId',
+                element: <AccountSettings />,
+              }
+            ]
           }, {
             path: 'budget',
             element: <BudgetSettingsPage />,

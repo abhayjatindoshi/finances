@@ -8,7 +8,7 @@ const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   useEffect(() => {
     if (location.pathname === '/settings') {
-      navigate('/settings/account');
+      navigate('/settings/accounts');
     }
   }, [location.pathname, navigate]);
 

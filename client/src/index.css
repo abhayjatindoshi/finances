@@ -30,6 +30,10 @@ svg {
   line-height: 2rem;
 }
 
+.selection-hover:hover {
+  background-color: var(--ant-color-fill-secondary);
+}
+
 /***************** React Grid Overrides ****************/
 .rg-cell {
   border: 0 !important;
