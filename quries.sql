@@ -3,6 +3,15 @@ drop table if exists transactions;
 drop table if exists sub_categories;
 drop table if exists categories;
 drop table if exists accounts;
+drop table if exists users;
+
+create table users
+(
+    id VARCHAR(25) not null primary key,
+    name text not null,
+    email text not null,
+    picture text
+)
 
 create table accounts
 (

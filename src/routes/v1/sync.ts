@@ -1,10 +1,11 @@
 import express, { Router } from "express";
 import { ChangeSet } from "../../dao/base-service";
 import { serviceMap } from "../../dao";
+import { authenticated } from "../../services/passport";
 
 const router: Router = express.Router();
 
-router.post('/pull', async (req, res) => {
+router.post('/pull', authenticated, async (req, res) => {
     let lastPulledAt = parseInt(req.query['lastPulledAt'] as string);
     let schemaVersion = req.query['schemaVersion'];
     let migration = req.query['migration'];
@@ -29,7 +30,7 @@ router.post('/pull', async (req, res) => {
     res.json(response);
 })
 
-router.post('/push', async (req, res) => {
+router.post('/push', authenticated, async (req, res) => {
     let lastPulledAt = parseInt(req.query['lastPulledAt'] as string);
     let changes: ChangeSet = req.body;
 

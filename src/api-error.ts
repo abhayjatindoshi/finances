@@ -4,6 +4,7 @@ export enum ApiErrorCode {
     FIELD_MISSING,
     INTERNAL_ERROR,
     INVALID_DATA,
+    UNAUTHORIZED,
 }
 
 export default class ApiError extends Error {
