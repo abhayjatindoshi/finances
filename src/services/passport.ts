@@ -33,6 +33,7 @@ function initializePassport() {
     scope: ['profile', 'email'],
   }, async (_accessToken, _refreshToken, profile, callback) => {
     try {
+      userService.validateUserAllowed(profile)
       const user = await userService.createUserIfNotExists(profile);
       callback(null, user);
     } catch (e) {

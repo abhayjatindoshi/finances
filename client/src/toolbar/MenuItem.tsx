@@ -14,8 +14,8 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, title, link, hideTitle }) => 
   const highlight = location.pathname.startsWith(link);
 
   return (
-    <div className='flex flex-col items-center gap-2'>
-      <Link to={link}>
+    <div className='flex flex-col items-center h-full'>
+      <Link className='grow flex flex-row items-center' to={link}>
         <div className="flex items-center gap-2">
           {icon}
           {!hideTitle && <span> {title}</span>}

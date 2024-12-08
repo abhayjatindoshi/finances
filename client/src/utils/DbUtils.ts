@@ -2,6 +2,7 @@ import { Q } from "@nozbe/watermelondb";
 import database from "../db/database";
 import Account from "../db/models/Account";
 import Tranasction from "../db/models/Transaction";
+import { sync } from "../db/sync";
 
 export async function getCurrentAccountBalance(account: Account): Promise<number> {
   const transactionCollection = database.collections.get<Tranasction>('transactions');
@@ -12,4 +13,8 @@ export async function getCurrentAccountBalance(account: Account): Promise<number
     return currentBalance;
   }, currentBalance);
   return parseFloat(currentBalance.toFixed(2));
+}
+
+export async function autoSync() {
+  setInterval(() => sync(), 60000) // 1 minute
 }

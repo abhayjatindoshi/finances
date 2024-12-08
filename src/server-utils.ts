@@ -1,7 +1,7 @@
 import { Application, NextFunction, Router, Request, Response, RequestHandler } from "express";
 import { lstatSync, readdirSync } from "fs";
 import path from "path";
-import ApiError from "./api-error";
+import ApiError, { ApiErrorCode } from "./api-error";
 
 export function loadRouters(prefix: string, app: Application): void {
   const routesBaseFolder = path.join(__dirname, 'routes')
@@ -44,6 +44,10 @@ export function errorHandler(err: any, req: Request, res: Response, next: NextFu
   }
 
   console.error(apiError.cause);
+  if (apiError.code == ApiErrorCode.NOT_ALLOWED) {
+    res.redirect('/error?error=app.loginNotAllowed');
+    return;
+  }
   apiError.respond(res);
 }
 

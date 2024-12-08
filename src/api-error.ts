@@ -5,12 +5,13 @@ export enum ApiErrorCode {
     INTERNAL_ERROR,
     INVALID_DATA,
     UNAUTHORIZED,
+    NOT_ALLOWED,
 }
 
 export default class ApiError extends Error {
 
     private statusCode: number;
-    private code: ApiErrorCode;
+    code: ApiErrorCode;
     cause: Error | undefined;
 
     constructor();
