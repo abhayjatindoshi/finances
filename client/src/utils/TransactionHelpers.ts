@@ -1,4 +1,4 @@
-import { Cell, CheckboxCell, DateCell, Id, NumberCell, TextCell } from "@silevis/reactgrid";
+import { Cell, DateCell, Id, NumberCell, TextCell } from "@silevis/reactgrid";
 import Transaction from "../db/models/Transaction";
 import database from "../db/database";
 
@@ -42,12 +42,8 @@ export const convertToTransactionRows = (transactions: Array<Transaction>, selec
     }).reverse();
 }
 
-export const updateTransaction = async (transaction: TransactionRow, columnId: Id, updatedCell: Cell, setTransactionSelectionStatus: (transactionId: string, selectionStatus: boolean) => void) => {
+export const updateTransaction = async (transaction: TransactionRow, columnId: Id, updatedCell: Cell) => {
   switch (columnId) {
-    case 'selection': {
-      setTransactionSelectionStatus(transaction.id, (updatedCell as CheckboxCell).checked)
-      break;
-    }
     case 'date': {
       await update(transaction.raw, t => {
         t.transactionAt = (updatedCell as DateCell).date ?? new Date(0);
@@ -90,7 +86,7 @@ export const updateTransaction = async (transaction: TransactionRow, columnId: I
             if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
           });
         }
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       }
       break;

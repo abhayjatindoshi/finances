@@ -6,7 +6,7 @@ import Account from "../../db/models/Account";
 import { withObservables } from "@nozbe/watermelondb/react";
 import { useTranslation } from "react-i18next";
 import { useForceUpdate } from "../../utils/ComponentUtils";
-import { ReactGrid, Column, Row, DefaultCellTypes, CellChange, OptionType } from "@silevis/reactgrid";
+import { ReactGrid, Column, Row, DefaultCellTypes, CellChange, OptionType, CheckboxCell } from "@silevis/reactgrid";
 import { Q } from '@nozbe/watermelondb';
 import { convertToTransactionRows, updateTransaction } from "../../utils/TransactionHelpers";
 import { AntDropdownCellTemplate, AntDropdownCell } from "./templates/AntDropdownCellTemplate";
@@ -68,7 +68,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     rowId: 'header',
     height: 35,
     cells: [
-      { type: 'header', text: '' },
+      { type: 'checkbox', checked: selectedTransactionIds.length === transactions.length && transactions.length > 0 },
       { type: 'header', text: t('app.id') },
       { type: 'header', text: t('app.subCategory') },
       { type: 'header', text: t('app.time') },
@@ -97,25 +97,33 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     }
   });
 
-  const setTransactionSelectionStatus = (transactionId: string, selectionStatus: boolean) => {
-    setSelectedTransactionIds((transactionIds) => {
+  const setTransactionSelectionStatus = (transactionId: string | undefined, selectionStatus: boolean) => {
+    let selectedIds = selectedTransactionIds;
+    if (!transactionId) {
+      selectedIds = selectionStatus ? transactionRows.map(t => t.id) : [];
+    } else {
       if (selectionStatus === true) {
-        transactionIds.push(transactionId);
-      } else if (transactionIds.indexOf(transactionId) >= 0) {
-        transactionIds.splice(transactionIds.indexOf(transactionId), 1);
+        selectedIds.push(transactionId);
+      } else if (selectedIds.indexOf(transactionId) >= 0) {
+        selectedIds.splice(selectedIds.indexOf(transactionId), 1);
       }
-      return transactionIds;
-    })
-    setSelectedTransactions(selectedTransactionIds);
+    }
+    setSelectedTransactionIds(selectedIds)
+    setSelectedTransactions(selectedIds);
   }
 
 
   const handleChanges = async (changes: CellChange[]) => {
     for (const change of changes) {
       const transaction = transactionRows.find(transaction => transaction.id === change.rowId);
+
+      if (change.columnId === 'selection') {
+        setTransactionSelectionStatus(transaction?.id, (change.newCell as CheckboxCell).checked);
+      }
+
       if (!transaction) return;
 
-      await updateTransaction(transaction, change.columnId, change.newCell, setTransactionSelectionStatus);
+      await updateTransaction(transaction, change.columnId, change.newCell);
       forceUpdate();
       refresh && refresh();
     }

@@ -42,15 +42,12 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
     }
   }
 
-  const deleteTransactions = () => {
-    selectedTransactionIds
-      .map(id => allTransactions.find(t => t.id === id))
-      .filter(t => t)
-      .forEach(async t => {
-        await database.write(async () => {
-          await t?.markAsDeleted();
-        })
-      })
+  const deleteTransactions = async () => {
+    await database.write(async () => {
+      const transactions = selectedTransactionIds
+        .map(id => allTransactions.find(t => t.id === id))
+      transactions.forEach(t => t?.markAsDeleted());
+    });
   }
 
   const account = accounts.find(account => account.id === id);
