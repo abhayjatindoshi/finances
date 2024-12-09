@@ -52,7 +52,7 @@ const SubCategoryPill: React.FC<SubCategoryPillProps> = ({ categoryId, subCatego
   async function deleteSubCategory() {
     if (totalDependencyCount > 0) return;
     await database.write(async () => {
-      await subCategory?.destroyPermanently();
+      await subCategory?.markAsDeleted();
     });
   }
 

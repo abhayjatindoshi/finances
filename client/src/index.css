@@ -58,7 +58,7 @@ svg {
 }
 
 .rg-celleditor {
-  padding: 0;
+  padding: 0 !important;
 }
 
 .rg-ant-dropdown-editor-wrapper {
@@ -68,4 +68,11 @@ svg {
 
 .rg-ant-dropdown-editor-wrapper .ant-select-selector {
   border-radius: 0 !important;
+}
+
+.rg-cell.rg-checkbox-cell label input:checked ~ span {
+  background-color: var(--ant-color-bg-elevated) !important;
+}
+.rg-cell.rg-checkbox-cell span {
+  background-color: var(--ant-color-bg-container) !important;
 }

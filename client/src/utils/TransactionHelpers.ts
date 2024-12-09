@@ -1,8 +1,9 @@
-import { Cell, DateCell, Id, NumberCell, TextCell } from "@silevis/reactgrid";
+import { Cell, CheckboxCell, DateCell, Id, NumberCell, TextCell } from "@silevis/reactgrid";
 import Transaction from "../db/models/Transaction";
 import database from "../db/database";
 
 export interface TransactionRow {
+  selected: boolean;
   id: string;
   date: Date;
   title: string;
@@ -13,12 +14,13 @@ export interface TransactionRow {
   raw: Transaction;
 }
 
-export const convertToTransactionRows = (transactions: Array<Transaction>, initialBalance?: number): Array<TransactionRow> => {
+export const convertToTransactionRows = (transactions: Array<Transaction>, selectedTransactionIds: string[], initialBalance?: number): Array<TransactionRow> => {
   let prevBalance = initialBalance || 0;
   return transactions
     .sort((a, b) => a.transactionAt.getTime() - b.transactionAt.getTime())
     .map((transaction) => {
       const row: TransactionRow = {
+        selected: selectedTransactionIds.includes(transaction.id),
         id: transaction.id,
         date: transaction.transactionAt,
         title: transaction.title,
@@ -40,8 +42,12 @@ export const convertToTransactionRows = (transactions: Array<Transaction>, initi
     }).reverse();
 }
 
-export const updateTransaction = async (transaction: TransactionRow, columnId: Id, updatedCell: Cell) => {
+export const updateTransaction = async (transaction: TransactionRow, columnId: Id, updatedCell: Cell, setTransactionSelectionStatus: (transactionId: string, selectionStatus: boolean) => void) => {
   switch (columnId) {
+    case 'selection': {
+      setTransactionSelectionStatus(transaction.id, (updatedCell as CheckboxCell).checked)
+      break;
+    }
     case 'date': {
       await update(transaction.raw, t => {
         t.transactionAt = (updatedCell as DateCell).date ?? new Date(0);
@@ -71,17 +77,21 @@ export const updateTransaction = async (transaction: TransactionRow, columnId: I
     }
 
     case 'classification': {
-      const classification = JSON.parse((updatedCell as TextCell).text);
-      if (classification.subCategoryId) {
-        await update(transaction.raw, t => {
-          if (t.subCategory) t.subCategory.id = classification.subCategoryId;
-        });
-      }
+      try {
+        const classification = JSON.parse((updatedCell as TextCell).text);
+        if (classification.subCategoryId) {
+          await update(transaction.raw, t => {
+            if (t.subCategory) t.subCategory.id = classification.subCategoryId;
+          });
+        }
 
-      if (classification.transferAccountId) {
-        await update(transaction.raw, t => {
-          if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
-        });
+        if (classification.transferAccountId) {
+          await update(transaction.raw, t => {
+            if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
+          });
+        }
+      } catch(e) {
+        console.error(e);
       }
       break;
     }

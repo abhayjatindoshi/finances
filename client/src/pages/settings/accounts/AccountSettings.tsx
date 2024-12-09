@@ -63,7 +63,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
     database.write(async () => {
       const dbAccount = accounts.find(account => account.id === accountId);
       if (!dbAccount) return;
-      await dbAccount.destroyPermanently();
+      await dbAccount.markAsDeleted();
       navigate('/settings/accounts');
     });
   }

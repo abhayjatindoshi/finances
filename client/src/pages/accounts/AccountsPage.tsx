@@ -5,15 +5,15 @@ import React from 'react';
 import Money from '../../common/Money';
 import ImportPage from './import/ImportPage';
 import IconButton from '../../common/IconButton';
-import EnhancedTransactionsList from './TransactionsList';
 import Account from '../../db/models/Account';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForceUpdate } from '../../utils/ComponentUtils';
-import { AliwangwangOutlined, DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, DeleteOutlined, DownOutlined, PlusOutlined } from '@ant-design/icons';
 import { Database, Q } from '@nozbe/watermelondb';
-import { Drawer, Dropdown, MenuProps, Statistic } from 'antd';
+import { Drawer, Dropdown, MenuProps, Popconfirm, Statistic } from 'antd';
+import database from '../../db/database';
 
 interface AccountsPageProps {
   accounts: Array<Account>;
@@ -33,13 +33,24 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
   const { id } = useParams();
   const forceUpdate = useForceUpdate();
   const [importDrawerOpen, setImportDrawerOpen] = React.useState<boolean>(false);
-  const [newUi, setNewUi] = React.useState(true);
+  const [selectedTransactionIds, setSelectedTransactionIds] = React.useState<string[]>([])
 
   const onAccountChange: MenuProps['onClick'] = ({ key }) => {
     const selectedAccount = accounts.find(account => account.id === key);
     if (selectedAccount) {
       navigate(`/accounts/${selectedAccount.id}`);
     }
+  }
+
+  const deleteTransactions = () => {
+    selectedTransactionIds
+      .map(id => allTransactions.find(t => t.id === id))
+      .filter(t => t)
+      .forEach(async t => {
+        await database.write(async () => {
+          await t?.markAsDeleted();
+        })
+      })
   }
 
   const account = accounts.find(account => account.id === id);
@@ -56,9 +67,18 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
               </div>
             </Dropdown>
           </div>
-          <div className='flex flex-col items-center'>
-            <IconButton icon={<AliwangwangOutlined />} type={newUi ? 'default' : 'primary'} onClick={() => setNewUi(!newUi)}>{newUi ? 'Old UI' : 'New UI'}</IconButton>
-          </div>
+          {selectedTransactionIds.length > 0 && <div className='flex flex-col items-center'>
+            <Popconfirm
+              title={`${t('app.delete')} ${t('app.transactions')} ?`}
+              icon={<CloseCircleOutlined style={{ color: 'red' }} />}
+              description={`${t('app.deleteConfirmation', { entity: t('app.transactions') })}`}
+              onConfirm={deleteTransactions}
+              placement='leftBottom'
+              okText={t('app.yes')}
+              cancelText={t('app.no')}>
+              <IconButton icon={<DeleteOutlined />} danger onClick={() => console.log}>{t('app.delete')}</IconButton>
+            </Popconfirm>
+          </div>}
           <div className='flex flex-col gap-2'>
             <IconButton icon={<PlusOutlined />} onClick={() => setImportDrawerOpen(true)}>{t('app.import')}</IconButton>
             <IconButton icon={<PlusOutlined />} disabled>{t('app.add')}</IconButton>
@@ -67,10 +87,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
         </div>
         {account &&
           <div className='grow overflow-auto'>
-            {newUi ?
-              <TransactionSheet account={account} refresh={forceUpdate} /> :
-              <EnhancedTransactionsList account={account} />
-            }
+            <TransactionSheet account={account} refresh={forceUpdate} setSelectedTransactions={setSelectedTransactionIds} />
           </div>
         }
       </div>

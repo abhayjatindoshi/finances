@@ -23,7 +23,7 @@ export default function Toolbar() {
   const profileOptions: MenuProps = {
     items: [
       {
-        label: 'logout',
+        label: t('app.logout'),
         key: 'logout',
         onClick: () => {
           window.location.href = logoutUrl
