@@ -74,15 +74,21 @@ svg {
   border-color: var(--ant-color-primary) !important;
   background-color: var(--ant-color-primary) !important;
 }
+
 .rg-cell.rg-checkbox-cell span {
   background-color: var(--ant-color-bg-container) !important;
   border-radius: var(--ant-border-radius-sm);
   border: var(--ant-line-width) var(--ant-line-type) var(--ant-color-border);
   transition: all var(--ant-motion-duration-slow);
 }
+
 .rg-cell.rg-checkbox-cell label span:after {
   left: 5px !important;
   top: 1px !important;
   width: 6px !important;
   height: 12px !important;
+}
+
+.rg-id {
+  justify-content: flex-start !important;
 }

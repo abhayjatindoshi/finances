@@ -86,13 +86,13 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
       height: 35,
       cells: [
         { type: 'checkbox', checked: transaction.selected },
-        { type: 'number', value: index + 1, nonEditable: true },
+        { type: 'number', value: index + 1, nonEditable: true, className: 'rg-id' },
         { type: 'classification', text: transaction.classification },
         { type: 'date', date: transaction.date, format: Intl.DateTimeFormat('en-IN') },
         { type: 'text', text: transaction.title },
-        { type: 'number', value: transaction.withdraw },
-        { type: 'number', value: transaction.deposit },
-        { type: 'number', value: transaction.balance, nonEditable: true },
+        { type: 'number', value: transaction.withdraw, format: Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }) },
+        { type: 'number', value: transaction.deposit, format: Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }) },
+        { type: 'number', value: transaction.balance, format: Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }), nonEditable: true },
       ]
     }
   });

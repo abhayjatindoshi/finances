@@ -16,7 +16,7 @@ interface MonthlyCategoryCostProps {
 
 const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions, subCategories, categories }) => {
 
-  const [selectedMonth, setSelectedMonth] = React.useState(new Date().getMonth());
+  const [selectedMonth, setSelectedMonth] = React.useState((new Date().getMonth() + 11) % 12);
 
   const categoryMap = categories.reduce((map, category) => {
     map.set(category.id, category);
@@ -45,42 +45,44 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
     return map;
   }, new Map<string, number>());
 
-  const accordionData: CollapseProps['items'] = Array.from(costPerCategory.entries()).map(([categoryId, cost]) => {
-    const category = categoryMap.get(categoryId);
-    
-    const subCategoryVsCost = Array.from(costPerSubCategory.entries())
-      .filter(([subCategoryId, _]) => subCategoryMap.get(subCategoryId)?.category.id === categoryId)
-      .map(([subCategoryId, cost]) => ({
-        name: subCategoryMap.get(subCategoryId)?.name,
-        cost
-      }))
-      .sort((a, b) => Math.abs(b.cost) - Math.abs(a.cost));
+  const accordionData: CollapseProps['items'] = Array.from(costPerCategory.entries())
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .map(([categoryId, cost]) => {
+      const category = categoryMap.get(categoryId);
 
-    return {
-      key: categoryId,
-      label: <div className='flex place-content-between w-full'>
-        <Typography.Text>{category?.name}</Typography.Text>
-        <Money amount={Math.abs(cost)} />
-      </div>,
-      children: <List size='small' dataSource={subCategoryVsCost} renderItem={({ name, cost }) => (
-        <List.Item>
-          <div className='flex flex-row items-center w-full'>
-            <Typography.Text className='grow text-lg' ellipsis={true}>{name}</Typography.Text>
-            <div className='text-sm text-nowrap'><Money amount={Math.abs(cost)} /></div>
-          </div>
-        </List.Item>
-      )} />
-    }
-  });
+      const subCategoryVsCost = Array.from(costPerSubCategory.entries())
+        .filter(([subCategoryId, _]) => subCategoryMap.get(subCategoryId)?.category.id === categoryId)
+        .map(([subCategoryId, cost]) => ({
+          name: subCategoryMap.get(subCategoryId)?.name,
+          cost
+        }))
+        .sort((a, b) => Math.abs(b.cost) - Math.abs(a.cost));
+
+      return {
+        key: categoryId,
+        label: <div className='flex place-content-between w-full'>
+          <Typography.Text>{category?.name}</Typography.Text>
+          <Money amount={Math.abs(cost)} />
+        </div>,
+        children: <List size='small' dataSource={subCategoryVsCost} renderItem={({ name, cost }) => (
+          <List.Item>
+            <div className='flex flex-row items-center w-full'>
+              <Typography.Text className='grow text-lg' ellipsis={true}>{name}</Typography.Text>
+              <div className='text-sm text-nowrap'><Money amount={Math.abs(cost)} /></div>
+            </div>
+          </List.Item>
+        )} />
+      }
+    });
 
   return (
-    <div>
+    <div className='rounded-lg p-2 w-96' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
       <Select className='w-48 mb-2' value={selectedMonth} onChange={setSelectedMonth}>
         {Array.from({ length: 12 }).map((_, index) => (
           <Select.Option key={index + 1} value={index}>{new Date(0, index).toLocaleString('default', { month: 'long' })}</Select.Option>
         ))}
       </Select>
-      <Collapse accordion items={accordionData} />
+      <Collapse className='overflow-auto h-64' accordion items={accordionData} />
     </div>
   );
 };

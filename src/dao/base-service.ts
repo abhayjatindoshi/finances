@@ -81,7 +81,6 @@ export default abstract class BaseService<M extends Model> {
 
     public async delete(ids: Array<string> | undefined) {
         if (!ids || ids.length == 0) return;
-        console.log(ids);
         let query = [
             `insert into deleted_entities (entity_type, entity_id, deleted_at) values (`,
             Array(ids.length - 1).fill('), ('),

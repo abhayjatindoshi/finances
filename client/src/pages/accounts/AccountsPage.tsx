@@ -64,18 +64,20 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
               </div>
             </Dropdown>
           </div>
-          {selectedTransactionIds.length > 0 && <div className='flex flex-col items-center'>
-            <Popconfirm
-              title={`${t('app.delete')} ${t('app.transactions')} ?`}
-              icon={<CloseCircleOutlined style={{ color: 'red' }} />}
-              description={`${t('app.deleteConfirmation', { entity: t('app.transactions') })}`}
-              onConfirm={deleteTransactions}
-              placement='leftBottom'
-              okText={t('app.yes')}
-              cancelText={t('app.no')}>
-              <IconButton icon={<DeleteOutlined />} danger onClick={() => console.log}>{t('app.delete')}</IconButton>
-            </Popconfirm>
-          </div>}
+          <div className='flex flex-col items-center'>
+            {selectedTransactionIds.length > 0 &&
+              <Popconfirm
+                title={`${t('app.delete')} ${t('app.transactions')} ?`}
+                icon={<CloseCircleOutlined style={{ color: 'red' }} />}
+                description={`${t('app.deleteConfirmation', { entity: t('app.transactions') })}`}
+                onConfirm={deleteTransactions}
+                placement='leftBottom'
+                okText={t('app.yes')}
+                cancelText={t('app.no')}>
+                <IconButton icon={<DeleteOutlined />} danger>{t('app.delete')}</IconButton>
+              </Popconfirm>
+            }
+          </div>
           <div className='flex flex-col gap-2'>
             <IconButton icon={<PlusOutlined />} onClick={() => setImportDrawerOpen(true)}>{t('app.import')}</IconButton>
             <IconButton icon={<PlusOutlined />} disabled>{t('app.add')}</IconButton>

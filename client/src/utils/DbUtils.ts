@@ -16,5 +16,5 @@ export async function getCurrentAccountBalance(account: Account): Promise<number
 }
 
 export async function autoSync() {
-  setInterval(() => sync(), 60000) // 1 minute
+  setInterval(() => sync(), 20000) // 20 seconds
 }

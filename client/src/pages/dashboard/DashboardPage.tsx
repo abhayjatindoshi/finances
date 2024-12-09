@@ -14,9 +14,7 @@ const DashboardPage: React.FC = () => {
         <DashboardCard size='small' title={t('app.currentBalance')}>
           <EnhancedAccountBalances />
         </DashboardCard>
-        <DashboardCard size='medium'>
-          <EnhancedMonthlyCategoryCost />
-        </DashboardCard>
+        <EnhancedMonthlyCategoryCost />
       </div>
     </div>
   );
