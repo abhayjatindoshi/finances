@@ -74,7 +74,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
     database.write(async () => {
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
-      await dbCategory.destroyPermanently();
+      await dbCategory.markAsDeleted();
       navigate('/settings/budget');
     });
   }

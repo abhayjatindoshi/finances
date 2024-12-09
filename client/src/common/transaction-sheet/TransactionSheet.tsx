@@ -6,10 +6,9 @@ import Account from "../../db/models/Account";
 import { withObservables } from "@nozbe/watermelondb/react";
 import { useTranslation } from "react-i18next";
 import { useForceUpdate } from "../../utils/ComponentUtils";
-import { ReactGrid, Column, Row, DefaultCellTypes, CellChange } from "@silevis/reactgrid";
+import { ReactGrid, Column, Row, DefaultCellTypes, CellChange, OptionType, CheckboxCell } from "@silevis/reactgrid";
 import { Q } from '@nozbe/watermelondb';
 import { convertToTransactionRows, updateTransaction } from "../../utils/TransactionHelpers";
-import { BaseOptionType } from "antd/es/select";
 import { AntDropdownCellTemplate, AntDropdownCell } from "./templates/AntDropdownCellTemplate";
 import "@silevis/reactgrid/styles.css";
 
@@ -19,14 +18,16 @@ interface TransactionSheetProps {
   transactions: Array<Transaction>
   subCategories: Array<SubCategory>
   accounts: Array<Account>
+  setSelectedTransactions: (selectedTransactionIds: string[]) => void
 }
 
-const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactions, subCategories, accounts, refresh }) => {
+const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactions, subCategories, accounts, refresh, setSelectedTransactions }) => {
 
   const { t } = useTranslation();
   const forceUpdate = useForceUpdate();
   const [totalWidth, setTotalWidth] = React.useState(0);
   const elementRef = React.useRef<HTMLDivElement>(null);
+  const [selectedTransactionIds, setSelectedTransactionIds] = React.useState<string[]>([]);
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -43,7 +44,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const classificationOptions: BaseOptionType[] = [...subCategories.map(s => ({
+  const classificationOptions: OptionType[] = [...subCategories.map(s => ({
     value: JSON.stringify({ subCategoryId: s.id }),
     label: s.name
   })), ...accounts.map(a => ({
@@ -51,21 +52,23 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     label: a.name
   }))];
 
-  
+
   const columns: Column[] = [
-    { columnId: 'id', width: 40, resizable: false, },
-    { columnId: 'classification', width: 150, resizable: true, },
-    { columnId: 'date', width: 150, resizable: true, },
-    { columnId: 'title', width: totalWidth - 750, resizable: true, },
-    { columnId: 'withdraw', width: 100, resizable: true, },
-    { columnId: 'deposit', width: 100, resizable: true, },
-    { columnId: 'balance', width: 150, resizable: true, },
+    { columnId: 'selection', width: 30 },
+    { columnId: 'id', width: 40 },
+    { columnId: 'classification', width: 150 },
+    { columnId: 'date', width: 150 },
+    { columnId: 'title', width: totalWidth - 750 },
+    { columnId: 'withdraw', width: 100 },
+    { columnId: 'deposit', width: 100 },
+    { columnId: 'balance', width: 150 },
   ];
 
   const headerRow: Row = {
     rowId: 'header',
     height: 35,
     cells: [
+      { type: 'checkbox', checked: selectedTransactionIds.length === transactions.length && transactions.length > 0 },
       { type: 'header', text: t('app.id') },
       { type: 'header', text: t('app.subCategory') },
       { type: 'header', text: t('app.time') },
@@ -76,12 +79,13 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     ]
   }
 
-  const transactionRows = convertToTransactionRows(transactions, account.initialBalance);
+  const transactionRows = convertToTransactionRows(transactions, selectedTransactionIds, account.initialBalance);
   const rows: Row<DefaultCellTypes | AntDropdownCell>[] = transactionRows.map((transaction, index) => {
     return {
       rowId: transaction.id,
       height: 35,
       cells: [
+        { type: 'checkbox', checked: transaction.selected },
         { type: 'number', value: index + 1, nonEditable: true },
         { type: 'classification', text: transaction.classification },
         { type: 'date', date: transaction.date, format: Intl.DateTimeFormat('en-IN') },
@@ -93,9 +97,30 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     }
   });
 
+  const setTransactionSelectionStatus = (transactionId: string | undefined, selectionStatus: boolean) => {
+    let selectedIds = selectedTransactionIds;
+    if (!transactionId) {
+      selectedIds = selectionStatus ? transactionRows.map(t => t.id) : [];
+    } else {
+      if (selectionStatus === true) {
+        selectedIds.push(transactionId);
+      } else if (selectedIds.indexOf(transactionId) >= 0) {
+        selectedIds.splice(selectedIds.indexOf(transactionId), 1);
+      }
+    }
+    setSelectedTransactionIds(selectedIds)
+    setSelectedTransactions(selectedIds);
+  }
+
+
   const handleChanges = async (changes: CellChange[]) => {
     for (const change of changes) {
       const transaction = transactionRows.find(transaction => transaction.id === change.rowId);
+
+      if (change.columnId === 'selection') {
+        setTransactionSelectionStatus(transaction?.id, (change.newCell as CheckboxCell).checked);
+      }
+
       if (!transaction) return;
 
       await updateTransaction(transaction, change.columnId, change.newCell);
@@ -105,7 +130,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
   }
 
   return (
-    <div ref={elementRef} className="flex flex-col items-center">
+    <div ref={elementRef} className="flex flex-col items-center gap-2">
       <ReactGrid
         columns={columns}
         rows={[headerRow, ...rows]}
