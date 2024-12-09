@@ -37,11 +37,19 @@ export default abstract class BaseService<M extends Model> {
     public async push(lastPulledAt: number, changes: Changes<M>): Promise<boolean> {
         return await db.runInTransaction(async (): Promise<boolean> => {
             return await Promise.all([
-                this.create(changes.created),
-                this.update(changes.updated),
-                this.delete(changes.deleted),
+                ...this.chunckAndExecute(100, changes.created, this.create),
+                ...this.chunckAndExecute(100, changes.updated, this.update),
+                ...this.chunckAndExecute(100, changes.deleted, this.delete),
             ]).then(_ => true);
         })
+    }
+
+    private chunckAndExecute<T, V>(chunkSize: number, items: Array<T>, executor: (items: Array<T>) => Promise<V>): Array<Promise<V>> {
+        let promises = [];
+        for (let i = 0; i < items.length; i += chunkSize) {
+            promises.push(executor.call(this, items.slice(i, i + chunkSize)));
+        }
+        return promises;
     }
 
     public async create(entities: Array<M> | undefined) {

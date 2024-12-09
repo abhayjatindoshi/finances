@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 8080;
 
 // backend api configuration
-app.use('/api', bodyParser.json());
+app.use('/api', bodyParser.json({ limit: '10mb' }));
 setupAuthentication('/api', app);
 loadRouters('/api', app);
 app.use('/api', errorHandler)
