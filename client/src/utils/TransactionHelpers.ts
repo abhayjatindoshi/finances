@@ -31,9 +31,9 @@ export const convertToTransactionRows = (transactions: Array<Transaction>, selec
         raw: transaction,
       };
 
-      if (transaction.subCategory) {
+      if (transaction.subCategory?.id) {
         row.classification = JSON.stringify({ subCategoryId: transaction.subCategory.id });
-      } else if (transaction.transferAccount) {
+      } else if (transaction.transferAccount?.id) {
         row.classification = JSON.stringify({ transferAccountId: transaction.transferAccount.id });
       }
 
@@ -74,16 +74,27 @@ export const updateTransaction = async (transaction: TransactionRow, columnId: I
 
     case 'classification': {
       try {
-        const classification = JSON.parse((updatedCell as TextCell).text);
+        const rawText = (updatedCell as TextCell).text;
+        if (rawText === '') {
+          await update(transaction.raw, t => {
+            if (t.subCategory) t.subCategory.id = null;
+            if (t.transferAccount) t.transferAccount.id = null;
+          });
+          break;
+        }
+        
+        const classification = JSON.parse(rawText);
         if (classification.subCategoryId) {
           await update(transaction.raw, t => {
             if (t.subCategory) t.subCategory.id = classification.subCategoryId;
+            if (t.transferAccount) t.transferAccount.id = null;
           });
         }
 
         if (classification.transferAccountId) {
           await update(transaction.raw, t => {
             if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
+            if (t.subCategory) t.subCategory.id = null;
           });
         }
       } catch (e) {

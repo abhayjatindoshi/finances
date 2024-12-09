@@ -46,7 +46,7 @@ export class AntDropdownCellTemplate implements CellTemplate<AntDropdownCell> {
     }
 
     const onKeyDown = (e: React.KeyboardEvent) => {
-      if (e.keyCode === keyCodes.DOWN_ARROW) {
+      if (e.keyCode === keyCodes.DOWN_ARROW || e.keyCode === keyCodes.UP_ARROW) {
         e.stopPropagation();
       }
     }
