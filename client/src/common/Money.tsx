@@ -9,7 +9,6 @@ interface MoneyProps {
 const Money: React.FC<MoneyProps> = ({ amount }) => {
 
   const { t } = useTranslation();
-  const formatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
   return (
     <>
