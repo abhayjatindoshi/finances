@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { moneyFormat } from '../constants';
 
 interface MoneyProps {
   amount: number | undefined;
@@ -8,11 +9,10 @@ interface MoneyProps {
 const Money: React.FC<MoneyProps> = ({ amount }) => {
 
   const { t } = useTranslation();
-  const formatter = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 
   return (
     <>
-      {amount === undefined ? t('app.unknown') : formatter.format(amount)}
+      {amount === undefined ? t('app.unknown') : moneyFormat.format(amount)}
     </>
   );
 };

@@ -1,15 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
-import DashboardPage from "./pages/dashboard/DashboardPage";
-import App from "./App";
-import ErrorPage from "./pages/ErrorPage";
-import EnhancedRedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountPage";
-import EnhancedAccountsPage from "./pages/accounts/AccountsPage";
-import SettingsPage from "./pages/settings/SettingsPage";
-import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
-import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
-import EnhancedCategorySettings from "./pages/settings/budget/CategorySettings";
-import HomePage from "./pages/HomePage";
 import AccountSettings from "./pages/settings/accounts/AccountSettings";
+import AccountsPage from "./pages/accounts/AccountsPage";
+import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
+import App from "./App";
+import BudgetPage from "./pages/budget/BudgetPage";
+import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
+import CategorySettings from "./pages/settings/budget/CategorySettings";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+import ErrorPage from "./pages/ErrorPage";
+import HomePage from "./pages/HomePage";
+import RedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountPage";
+import SettingsPage from "./pages/settings/SettingsPage";
 
 const router = createBrowserRouter([
   {
@@ -25,10 +26,16 @@ const router = createBrowserRouter([
         element: <DashboardPage />,
       }, {
         path: 'accounts',
-        element: <EnhancedRedirectToFirstAccountPage />,
+        element: <RedirectToFirstAccountPage />,
       }, {
         path: 'accounts/:id',
-        element: <EnhancedAccountsPage />,
+        element: <AccountsPage />,
+      }, {
+        path: 'budget',
+        element: <BudgetPage />,
+      }, {
+        path: 'budget/:tab',
+        element: <BudgetPage />,
       }, {
         path: 'settings',
         element: <SettingsPage />,
@@ -48,7 +55,7 @@ const router = createBrowserRouter([
             children: [
               {
                 path: ':categoryId',
-                element: <EnhancedCategorySettings />
+                element: <CategorySettings />
               }
             ]
           }

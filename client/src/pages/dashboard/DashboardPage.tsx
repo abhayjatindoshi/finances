@@ -1,7 +1,6 @@
-import React from 'react';
-import EnhancedAccountBalances from './components/AccountBalances';
-import DashboardCard from './components/DashboardCard';
 import { useTranslation } from 'react-i18next';
+import DashboardCard from './components/DashboardCard';
+import EnhancedAccountBalances from './components/AccountBalances';
 import EnhancedMonthlyCategoryCost from './components/MonthlyCategoryCost';
 
 const DashboardPage: React.FC = () => {

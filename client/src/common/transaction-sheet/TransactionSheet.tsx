@@ -11,6 +11,7 @@ import { Q } from '@nozbe/watermelondb';
 import { convertToTransactionRows, updateTransaction } from "../../utils/TransactionHelpers";
 import { AntDropdownCellTemplate, AntDropdownCell } from "./templates/AntDropdownCellTemplate";
 import "@silevis/reactgrid/styles.css";
+import { dateTimeFormat, moneyFormat } from "../../constants";
 
 interface TransactionSheetProps {
   account: Account
@@ -88,7 +89,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
         { type: 'checkbox', checked: transaction.selected },
         { type: 'number', value: index + 1, nonEditable: true, className: 'rg-id' },
         { type: 'classification', text: transaction.classification },
-        { type: 'date', date: transaction.date, format: Intl.DateTimeFormat('en-IN') },
+        { type: 'date', date: transaction.date, format: dateTimeFormat },
         { type: 'text', text: transaction.title },
         { type: 'number', value: transaction.withdraw, format: Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }) },
         { type: 'number', value: transaction.deposit, format: Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }) },
