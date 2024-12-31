@@ -11,7 +11,7 @@ import { Q } from '@nozbe/watermelondb';
 import { convertToTransactionRows, updateTransaction } from "../../utils/TransactionHelpers";
 import { AntDropdownCellTemplate, AntDropdownCell } from "./templates/AntDropdownCellTemplate";
 import "@silevis/reactgrid/styles.css";
-import { dateTimeFormat, moneyFormat } from "../../constants";
+import { dateTimeFormat } from "../../constants";
 
 interface TransactionSheetProps {
   account: Account
