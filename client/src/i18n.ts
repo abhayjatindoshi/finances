@@ -43,6 +43,7 @@ const resources = {
       'app.new': 'New',
       'app.no': 'No',
       'app.none': 'None',
+      'app.percentage': 'Percentage',
       'app.readingTransactions': 'Reading transactions',
       'app.save': 'Save',
       'app.savings': 'Savings',
@@ -53,6 +54,7 @@ const resources = {
       'app.syncing': 'Syncing recent changes from the server.',
       'app.time': 'Time',
       'app.title': 'Title',
+      'app.totalSpent': 'Total Spent',
       'app.transactions': 'Transactions',
       'app.transactionsImported': 'transactions imported',
       'app.unknown': '🫤',
@@ -61,6 +63,7 @@ const resources = {
       'app.wants': 'Wants',
       'app.withdraw': 'Withdraw',
       'app.yearly': 'Yearly',
+      'app.yearlyLimit': 'Yearly Limit',
       'app.yes': 'Yes',
     }
   }

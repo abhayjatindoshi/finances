@@ -5,7 +5,7 @@ import { Segmented } from 'antd';
 import BudgetCategories from './BudgetCategories';
 
 
-export type BudgetTab = 'monthly' | 'yearly' | 'none';
+export type BudgetTab = 'monthly' | 'yearly';
 
 const BudgetPage: React.FC = () => {
 
@@ -15,7 +15,7 @@ const BudgetPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = React.useState<BudgetTab | undefined>();
 
   React.useEffect(() => {
-    if (tab === 'monthly' || tab === 'yearly' || tab === 'none') {
+    if (tab === 'monthly' || tab === 'yearly') {
       setSelectedTab(tab);
     } else {
       navigate('/budget/monthly');
@@ -30,8 +30,7 @@ const BudgetPage: React.FC = () => {
         </div>
         <Segmented className='self-center' options={[
           { label: t('app.monthly'), value: 'monthly' },
-          { label: t('app.yearly'), value: 'yearly' },
-          { label: t('app.none'), value: 'none' },
+          { label: t('app.yearly'), value: 'yearly' }
         ]} value={selectedTab} onChange={(value) => navigate(`/budget/${value}`)} />
       </div>
     </>

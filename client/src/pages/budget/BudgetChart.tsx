@@ -23,12 +23,12 @@ const BudgetChart: React.FC<BudgetChartProps> = ({ size, category, amount }) => 
     </>}>
       <div style={{ width: size, height: size }}>
         <div className="p-2 h-full w-full">
-          <div className="rounded-full opacity-70 hover:opacity-100 flex items-center justify-center" style={{
+          <div className="rounded-full flex items-center justify-center" style={{
             backgroundColor: color,
             height: displayPercentage + '%',
             width: displayPercentage + '%'
           }}>
-            {percentage > 100 && percentage.toFixed(0) + '%'}
+            {percentage > 0 && <span className={percentage < 100 ? 'text-xs' : ''}>{percentage.toFixed(0)}%</span>}
           </div>
         </div>
       </div>
