@@ -1,5 +1,5 @@
-import React from 'react';
-import EnhancedAccountBalances from './components/AccountBalances';
+import { useTranslation } from 'react-i18next';
+import AccountBalances from './components/AccountBalances';
 import DashboardCard from './components/DashboardCard';
 import { useTranslation } from 'react-i18next';
 import EnhancedMonthlyCategoryCost from './components/MonthlyCategoryCost';

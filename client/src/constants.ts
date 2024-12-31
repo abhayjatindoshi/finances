@@ -15,6 +15,10 @@ export const antTheme = {
     }
   }
 }
+
+export const dateTimeFormat = Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' });
+export const moneyFormat = Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+
 export const loginUrl = '/api/v1/auth/login';
 export const logoutUrl = '/api/v1/auth/logout';
 export const profileApiUrl = '/api/v1/auth/me';

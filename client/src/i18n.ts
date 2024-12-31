@@ -42,6 +42,7 @@ const resources = {
       'app.needs': 'Needs',
       'app.new': 'New',
       'app.no': 'No',
+      'app.none': 'None',
       'app.readingTransactions': 'Reading transactions',
       'app.save': 'Save',
       'app.savings': 'Savings',
