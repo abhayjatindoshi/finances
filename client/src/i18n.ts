@@ -54,6 +54,7 @@ const resources = {
       'app.syncing': 'Syncing recent changes from the server.',
       'app.time': 'Time',
       'app.title': 'Title',
+      'app.topSpends': 'Top Spends',
       'app.totalSpent': 'Total Spent',
       'app.transactions': 'Transactions',
       'app.transactionsImported': 'transactions imported',

@@ -1,11 +1,15 @@
-import React, { useEffect } from 'react';
-import Account from '../../../db/models/Account';
 import { Database, Q } from '@nozbe/watermelondb';
+import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
+import { List, Tooltip, Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
-import TableName from '../../../db/TableName';
-import { List, Typography } from 'antd';
-import { getCurrentAccountBalance } from '../../../utils/DbUtils';
+import Account from '../../../db/models/Account';
 import Money from '../../../common/Money';
+import React, { useEffect } from 'react';
+import TableName from '../../../db/TableName';
+import moment from 'moment';
+import { dateTimeFormat } from '../../../constants';
+import { Link } from 'react-router-dom';
 
 interface AccountBalancesProps {
   accounts: Array<Account>;
@@ -13,28 +17,38 @@ interface AccountBalancesProps {
 
 const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
 
-  const [balanceMap, setBalanceMap] = React.useState<Map<string, number>>(new Map());
+  const { t } = useTranslation();
+  const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
 
   useEffect(() => {
     const fetchBalances = async () => {
-      const balances = new Map<string, number>();
-      for (const account of accounts) {
-        balances.set(account.id, await getCurrentAccountBalance(account));
-      }
+      const balances = await getBalanceMap();
       setBalanceMap(balances);
     };
     fetchBalances();
   }, [accounts]);
 
   return (
-    <List size='small' dataSource={accounts} renderItem={(account) => (
-      <List.Item>
-        <div className='flex flex-row items-center w-full'>
-          <Typography.Text className='grow text-lg' ellipsis={true}>{account.name}</Typography.Text>
-          <div className='text-sm text-nowrap'><Money amount={balanceMap.get(account.id)} /></div>
-        </div>
-      </List.Item>
-    )} />
+    <div className='rounded-lg p-2 w-80' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
+      <div className='text-xl font-semibold mb-2'>{t('app.currentBalance')}</div>
+      <div className='overflow-auto'>
+        <List size='small' dataSource={accounts} renderItem={(account) => (
+          <List.Item className='flex flex-row items-start justify-between w-full gap-5'>
+            <div className='flex flex-col'>
+              <Link to={'/accounts/' + account.id}>
+                <Typography.Text className='grow text-xl' ellipsis={true}>{account.name}</Typography.Text>
+              </Link>
+              <span className='text-xs'>
+                <Tooltip title={dateTimeFormat.format(balanceMap.get(account)?.lastUpdate)}>
+                  {moment(balanceMap.get(account)?.lastUpdate).fromNow(true)}
+                </Tooltip>
+              </span>
+            </div>
+            <div className='text-nowrap'><Money amount={balanceMap.get(account)?.balance} /></div>
+          </List.Item>
+        )} />
+      </div>
+    </div>
   );
 };
 const enhance = withObservables([], ({ database }: { database: Database }) => ({

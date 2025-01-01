@@ -9,7 +9,7 @@ import IconButton from '../../../common/IconButton';
 import { PlusOutlined } from '@ant-design/icons';
 import TableName from '../../../db/TableName';
 import Account from '../../../db/models/Account';
-import { getCurrentAccountBalance } from '../../../utils/DbUtils';
+import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
 
 interface AccountsSettingsListProps {
   accounts: Array<Account>
@@ -20,15 +20,12 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  const [balanceMap, setBalanceMap] = React.useState<Map<string, number>>(new Map());
+  const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
   const selectedAccountId = location.pathname.split('/').pop();
 
   useEffect(() => {
     const fetchBalances = async () => {
-      const balances = new Map<string, number>();
-      for (const account of accounts) {
-        balances.set(account.id, await getCurrentAccountBalance(account));
-      }
+      const balances = await getBalanceMap();
       setBalanceMap(balances);
     };
     fetchBalances();
@@ -62,7 +59,7 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
               <div>{account.name}</div>
               <div className='text-xs' style={{
                 color: selectedAccountId === account.id ? 'var(--ant-blue-5)' : 'var(--ant-color-text-tertiary)'
-              }}>{t('app.balance')}: <Money amount={balanceMap.get(account.id)} /></div>
+              }}>{t('app.balance')}: <Money amount={balanceMap.get(account)?.balance} /></div>
             </div>
           </div>
         </List.Item>

@@ -1,6 +1,6 @@
 import { Progress, Tooltip } from "antd";
 import Money from "../../common/Money";
-import { CategoryData } from "./BudgetCategories";
+import { CategoryData } from "../../utils/DbUtils";
 
 interface BudgetProgressProps {
   data: CategoryData

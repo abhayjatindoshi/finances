@@ -5,12 +5,13 @@ import BudgetChart from './BudgetChart';
 import BudgetProgress from './BudgetProgress';
 import Category from '../../db/models/Category';
 import moment from 'moment';
-import React from 'react';
+import React, { useEffect } from 'react';
 import SubCategory from '../../db/models/SubCategory';
 import TableName from '../../db/TableName';
 import Tranasction from '../../db/models/Transaction';
 import { moneyFormat } from '../../constants';
 import { useTranslation } from 'react-i18next';
+import { CategoryData, getBudgetData } from '../../utils/DbUtils';
 
 interface BudgetCategoriesProps {
   tab: BudgetTab
@@ -19,34 +20,19 @@ interface BudgetCategoriesProps {
   transactions: Array<Tranasction>
 }
 
-export interface CategoryData {
-  category: Category
-  transactions: Array<Tranasction>
-  total: number
-  monthlyTotal: { [key: number]: number }
-  yearlyLimit: number
-  budgetPercentage: number
-}
-
 const BudgetCategories: React.FC<BudgetCategoriesProps> = ({ tab, categories, subCategories, transactions }) => {
 
   const { t } = useTranslation();
-  const data: Array<CategoryData> = categories
-    .map(category => {
-      const subCategoriesIds = subCategories.filter(subCategory => subCategory.category.id === category.id).map(subCategory => subCategory.id);
-      const categoryTransactions = transactions.filter(transaction => subCategoriesIds.includes(transaction.subCategory?.id));
-      const monthlyTotal: { [key: number]: number } = {};
-      categoryTransactions.forEach(transaction => {
-        const month = new Date(transaction.transactionAt).getMonth();
-        monthlyTotal[month] = (monthlyTotal[month] || 0) + transaction.amount;
-      });
-      const total = Object.values(monthlyTotal).reduce((acc, val) => acc + val, 0);
-      const yearlyLimit = category.monthlyLimit > 0 ? category.monthlyLimit * 12 : category.yearlyLimit;
-      const budgetPercentage = yearlyLimit > 0 ? total / yearlyLimit * -100 : -total;
-      return { category, transactions: categoryTransactions, total, monthlyTotal, yearlyLimit, budgetPercentage };
-    })
-    .filter(category => category.total < 0)
-    .sort((a, b) => b.budgetPercentage - a.budgetPercentage);
+  const [data, setData] = React.useState<Array<CategoryData>>([]);
+
+  useEffect(() => {
+    const fetchCategoryData = async () => {
+      const data = await getBudgetData();
+      setData(data);
+    }
+
+    fetchCategoryData();
+  }, [setData]);
 
   return (
     <table className='table-auto text-xl w-full text-center'>
