@@ -33,6 +33,7 @@ const resources = {
       'app.import': 'Import',
       'app.income': 'Income',
       'app.initialBalance': 'Initial Balance',
+      'app.installApp': 'Install App',
       'app.jupiter': 'Jupiter Bank',
       'app.loggingIn': 'Logging you in.',
       'app.loginNotAllowed': 'You are not authorised to access this application. Please contact Abhay Jatin Doshi for further details.',
