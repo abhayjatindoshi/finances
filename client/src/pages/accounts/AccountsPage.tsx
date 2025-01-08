@@ -10,7 +10,7 @@ import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForceUpdate } from '../../utils/ComponentUtils';
-import { CloseCircleOutlined, DeleteOutlined, DownOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined } from '@ant-design/icons';
 import { Database, Q } from '@nozbe/watermelondb';
 import { Drawer, Dropdown, MenuProps, Popconfirm, Statistic } from 'antd';
 import database from '../../db/database';
@@ -56,15 +56,19 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
   return (
     <>
       <div className='pt-2 px-2 flex flex-col app-content-height'>
-        <div className='flex items-center gap-6'>
+        <div className='flex items-center gap-2'>
           <div className='grow'>
-            <Dropdown menu={{ items, onClick: onAccountChange }} >
-              <div className='text-xl w-96'>
-                {account?.name} <DownOutlined />
-              </div>
-            </Dropdown>
+            <div className='max-w-64'>
+              <Dropdown menu={{ items, onClick: onAccountChange }} >
+                <div className='text-xl'>
+                  {account?.name} <DownOutlined />
+                </div>
+              </Dropdown>
+            </div>
           </div>
-          <div className='flex flex-col items-center'>
+          <div className='flex flex-col gap-2'>
+            <IconButton icon={<DownloadOutlined />} onClick={() => setImportDrawerOpen(true)}>{t('app.import')}</IconButton>
+            {/* <IconButton icon={<PlusOutlined />} disabled>{t('app.add')}</IconButton> */}
             {selectedTransactionIds.length > 0 &&
               <Popconfirm
                 title={`${t('app.delete')} ${t('app.transactions')} ?`}
@@ -78,11 +82,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
               </Popconfirm>
             }
           </div>
-          <div className='flex flex-col gap-2'>
-            <IconButton icon={<PlusOutlined />} onClick={() => setImportDrawerOpen(true)}>{t('app.import')}</IconButton>
-            <IconButton icon={<PlusOutlined />} disabled>{t('app.add')}</IconButton>
-          </div>
-          {account && <Statistic title={t('app.currentBalance')} className='text-right' loading={balance === undefined} valueRender={() => <Money amount={balance} />} />}
+          {account && <Statistic title={t('app.currentBalance')} className='min-w-16 text-right' loading={balance === undefined} valueRender={() => <Money amount={balance} />} />}
         </div>
         {account &&
           <div className='grow overflow-auto'>

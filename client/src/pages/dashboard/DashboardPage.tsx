@@ -6,7 +6,7 @@ const DashboardPage: React.FC = () => {
 
   return (
     <div className='app-content-height'>
-      <div className='flex flex-wrap items-start p-4 gap-4'>
+      <div className='flex flex-wrap items-start justify-center p-4 gap-4'>
         <EnhancedAccountBalances />
         <EnhancedMonthlyCategoryCost />
         <TopSpends />

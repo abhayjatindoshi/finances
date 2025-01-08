@@ -12,6 +12,7 @@ import Tranasction from '../../db/models/Transaction';
 import { moneyFormat } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { CategoryData, getBudgetData } from '../../utils/DbUtils';
+import { Typography } from 'antd';
 
 interface BudgetCategoriesProps {
   tab: BudgetTab
@@ -50,8 +51,8 @@ const BudgetCategories: React.FC<BudgetCategoriesProps> = ({ tab, categories, su
           return (
             <tr key={category.id}>
               <td>
-                <div className='flex flex-col items-start m-2 text-xs'>
-                  <div className='text-xl'>{category.name}</div>
+                <div className='flex flex-col items-start m-2 text-xs min-w-36'>
+                  <Typography.Text className='text-xl' ellipsis>{category.name}</Typography.Text>
                   <span><b>{t('app.totalSpent')}:</b> {moneyFormat.format(-row.total)}</span>
                   <span><b>{t('app.yearlyLimit')}:</b> {moneyFormat.format(row.yearlyLimit)}</span>
                   <span><b>{t('app.percentage')}:</b> {row.budgetPercentage.toFixed(0)}</span>

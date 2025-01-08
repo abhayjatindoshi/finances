@@ -59,7 +59,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
     { columnId: 'id', width: 40 },
     { columnId: 'classification', width: 150 },
     { columnId: 'date', width: 150 },
-    { columnId: 'title', width: totalWidth - 750 },
+    { columnId: 'title', width: totalWidth - 750 < 150 ? 150 : totalWidth - 750 },
     { columnId: 'withdraw', width: 100 },
     { columnId: 'deposit', width: 100 },
     { columnId: 'balance', width: 150 },
@@ -131,7 +131,7 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
   }
 
   return (
-    <div ref={elementRef} className="flex flex-col items-center gap-2">
+    <div ref={elementRef} className="h-full">
       <ReactGrid
         columns={columns}
         rows={[headerRow, ...rows]}

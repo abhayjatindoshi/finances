@@ -6,10 +6,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
-import { PlusOutlined } from '@ant-design/icons';
+import { LeftOutlined, PlusOutlined } from '@ant-design/icons';
 import TableName from '../../../db/TableName';
 import Account from '../../../db/models/Account';
 import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
+import { unsubscribeAll } from '../../../utils/ComponentUtils';
+import { subscribeTo } from '../../../utils/GlobalVariable';
 
 interface AccountsSettingsListProps {
   accounts: Array<Account>
@@ -22,6 +24,7 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   const { t } = useTranslation();
   const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
   const selectedAccountId = location.pathname.split('/').pop();
+  const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
 
   useEffect(() => {
     const fetchBalances = async () => {
@@ -29,6 +32,8 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
       setBalanceMap(balances);
     };
     fetchBalances();
+    const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
+    return unsubscribeAll(screenSubscription);
   }, [accounts]);
 
   function randomBackgroundColor(account: Account): string {
@@ -38,14 +43,15 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   }
 
   return (
-    <div>
-      <div className='flex flex-row m-3'>
+    <div className='flex flex-col app-content-height'>
+      <div className='flex flex-row m-2'>
+        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate('/settings')} />}
         <div className='text-xl grow'>{t('app.accounts')}</div>
         <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate('/settings/accounts/new')}>
           {t('app.new')}
         </IconButton>
       </div>
-      <List itemLayout='horizontal' dataSource={accounts} renderItem={account => (
+      <List className='overflow-auto' itemLayout='horizontal' dataSource={accounts} renderItem={account => (
         <List.Item
           className={'cursor-pointer selection-hover'}
           style={{

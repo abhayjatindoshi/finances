@@ -1,13 +1,15 @@
 import { Database, Q } from '@nozbe/watermelondb';
 import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useEffect } from 'react';
 import Category, { CategoryType } from '../../../db/models/Category';
 import { Avatar, List } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
-import { PlusOutlined } from '@ant-design/icons';
+import { LeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { unsubscribeAll } from '../../../utils/ComponentUtils';
+import { subscribeTo } from '../../../utils/GlobalVariable';
 
 interface CategorySettingsListProps {
   categories: Array<Category>
@@ -19,6 +21,12 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   const location = useLocation();
   const { t } = useTranslation();
   const selectedCategoryId = location.pathname.split('/').pop();
+  const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
+    return unsubscribeAll(screenSubscription);
+  }, []);
 
   function description(category: Category): ReactNode {
     if (category.monthlyLimit) {
@@ -48,14 +56,15 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   }
 
   return (
-    <div>
-      <div className='flex flex-row m-3'>
+    <div className='flex flex-col app-content-height'>
+      <div className='flex flex-row items-center m-2'>
+        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate('/settings')} />}
         <div className='text-xl grow'>{t('app.categories')}</div>
         <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate('/settings/budget/new')}>
           {t('app.new')}
         </IconButton>
       </div>
-      <List itemLayout='horizontal' dataSource={categories} renderItem={category => (
+      <List className='overflow-auto' itemLayout='horizontal' dataSource={categories} renderItem={category => (
         <List.Item className='cursor-pointer selection-hover'
           style={{
             backgroundColor: selectedCategoryId === category.id ? 'var(--ant-blue-1)' : '',

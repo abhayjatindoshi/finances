@@ -1,4 +1,4 @@
-import { CloseCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, DeleteOutlined, EditOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input, Popconfirm } from 'antd';
 import { Q, Database } from '@nozbe/watermelondb';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -10,6 +10,8 @@ import React, { useEffect, useState } from 'react';
 import TableName from '../../../db/TableName';
 import Tranasction from '../../../db/models/Transaction';
 import Account from '../../../db/models/Account';
+import { unsubscribeAll } from '../../../utils/ComponentUtils';
+import { subscribeTo } from '../../../utils/GlobalVariable';
 
 interface AccountSettingsProps {
   accounts: Array<Account>
@@ -31,6 +33,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   const [edit, setEdit] = useState(false);
   const [saving, setSaving] = useState(false);
   const [totalDependencyCount, setTotalDependencyCount] = useState<number>(0);
+  const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
 
   useEffect(() => {
 
@@ -55,6 +58,9 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
     database.collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('account_id', account.id))
       .fetchCount().then(setTotalDependencyCount);
+
+    const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
+    return unsubscribeAll(screenSubscription);
 
   }, [accountId, accounts, navigate]);
 
@@ -102,6 +108,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   return (
     <div className="flex flex-col gap-4 m-3" key="a">
       <div className="flex items-center gap-2">
+        {isPortrait && <LeftOutlined onClick={() => navigate('/settings/accounts')} />}
         <div className="text-xl grow">
           {edit ?
             <Input value={account.name} onChange={e => setAccount({ ...account, name: e.target.value })} /> :

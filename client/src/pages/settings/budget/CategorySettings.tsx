@@ -1,4 +1,4 @@
-import { CloseCircleOutlined, DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons';
+import { CloseCircleOutlined, DeleteOutlined, EditOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input, Popconfirm, Segmented, Select } from 'antd';
 import { Q, Database } from '@nozbe/watermelondb';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -12,6 +12,8 @@ import SubCategory from '../../../db/models/SubCategory';
 import SubCategoryPill from './SubCategoryPill';
 import TableName from '../../../db/TableName';
 import Tranasction from '../../../db/models/Transaction';
+import { unsubscribeAll } from '../../../utils/ComponentUtils';
+import { subscribeTo } from '../../../utils/GlobalVariable';
 
 interface CategorySettingsProps {
   categories: Array<Category>
@@ -37,6 +39,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   const [saving, setSaving] = useState(false);
   const [edit, setEdit] = useState(false);
   const [totalDependencyCount, setTotalDependencyCount] = useState<number>(0);
+  const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
 
   useEffect(() => {
 
@@ -66,6 +69,9 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
     database.collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('sub_category_id', Q.oneOf(subCategories.map(s => s.id))))
       .fetchCount().then(setTotalDependencyCount);
+
+    const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
+    return unsubscribeAll(screenSubscription);
 
   }, [categoryId, categories, allSubCategories, navigate]);
 
@@ -121,6 +127,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   return (
     <div className="flex flex-col gap-4 m-3" key="a">
       <div className="flex items-center gap-2">
+        {isPortrait && <LeftOutlined onClick={() => navigate('/settings/budget')} />}
         <div className="text-xl grow">
           {edit ?
             <Input value={category.name} onChange={e => setCategory({ ...category, name: e.target.value })} /> :

@@ -27,9 +27,9 @@ const TopSpends: React.FC = () => {
   }
 
   return (
-    <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '25rem' }}>
+    <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '26rem' }}>
       <div className='text-xl font-semibold mb-2'>{t('app.topSpends')}</div>
-      <div className='flex flex-wrap items-center justify-center gap-2'>
+      <div className='flex flex-wrap items-center justify-center gap-4'>
         {data.slice(0, 5).map(row => (
           <DashbordProgess key={row.category.id} percentage={row.budgetPercentage} name={row.category.name} />
         ))}
