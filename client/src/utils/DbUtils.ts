@@ -10,6 +10,7 @@ import SubCategory from "../db/models/SubCategory";
 export interface AccountBalance {
   balance: number;
   lastUpdate: Date;
+  transactionCount: number;
 }
 
 export async function getBalanceMap(): Promise<Map<Account, AccountBalance>> {
@@ -28,7 +29,11 @@ export async function getBalanceMap(): Promise<Map<Account, AccountBalance>> {
     }, balance);
     balance = parseFloat(balance.toFixed(2));
 
-    result.set(account, { balance, lastUpdate: transactions[0].transactionAt });
+    result.set(account, {
+      balance,
+      lastUpdate: transactions[0].transactionAt,
+      transactionCount: transactions.length
+    });
   }
   return result;
 }

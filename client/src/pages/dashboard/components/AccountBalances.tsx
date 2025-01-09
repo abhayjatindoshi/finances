@@ -38,11 +38,17 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
               <Link to={'/accounts/' + account.id}>
                 <Typography.Text className='grow text-xl' ellipsis={true}>{account.name}</Typography.Text>
               </Link>
-              <span className='text-xs'>
-                <Tooltip title={dateTimeFormat.format(balanceMap.get(account)?.lastUpdate)}>
-                  {moment(balanceMap.get(account)?.lastUpdate).fromNow(true)}
-                </Tooltip>
-              </span>
+              <div className='flex flex-row items-center gap-2'>
+                <span className='text-xs'>
+                  <Tooltip title={dateTimeFormat.format(balanceMap.get(account)?.lastUpdate)}>
+                    {moment(balanceMap.get(account)?.lastUpdate).fromNow(true)} {t('app.ago')}
+                  </Tooltip>
+                </span>
+                <span>•</span>
+                <span className='text-xs'>
+                  {balanceMap.get(account)?.transactionCount} {t('app.transactions')}
+                </span>
+              </div>
             </div>
             <div className='text-nowrap'><Money amount={balanceMap.get(account)?.balance} /></div>
           </List.Item>

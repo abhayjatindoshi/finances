@@ -7,6 +7,7 @@ const resources = {
       'app.account': 'Account',
       'app.accounts': 'Accounts',
       'app.add': 'Add',
+      'app.ago': 'ago',
       'app.balance': 'Balance',
       'app.budget': 'Budget',
       'app.budgetLimit': 'Budget Limit',
