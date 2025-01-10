@@ -29,7 +29,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
   }, [accounts]);
 
   return (
-    <div className='rounded-lg p-2 w-80' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
+    <div className='rounded-lg p-2 w-96' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
       <div className='text-xl font-semibold mb-2'>{t('app.currentBalance')}</div>
       <div className='overflow-auto'>
         <List size='small' dataSource={accounts} renderItem={(account) => (

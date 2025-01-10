@@ -90,7 +90,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
           </div>
         }
       </div>
-      <Drawer title={t('app.import')} closable={false} size='large' placement='right' onClose={() => setImportDrawerOpen(false)} open={importDrawerOpen}>
+      <Drawer title={t('app.import')} closable={true} size='large' placement='right' onClose={() => setImportDrawerOpen(false)} open={importDrawerOpen}>
         {account && <ImportPage account={account} onClose={() => setImportDrawerOpen(false)} />}
       </Drawer>
     </>
