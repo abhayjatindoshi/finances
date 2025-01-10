@@ -1,4 +1,4 @@
-import { Collapse, CollapseProps, List, Select, Typography } from 'antd';
+import { Collapse, CollapseProps, DatePicker, List, Typography } from 'antd';
 import { Database } from '@nozbe/watermelondb';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import Category from '../../../db/models/Category';
@@ -7,6 +7,8 @@ import React from 'react';
 import SubCategory from '../../../db/models/SubCategory';
 import TableName from '../../../db/TableName';
 import Tranasction from '../../../db/models/Transaction';
+import moment from 'moment';
+import dayjs from 'dayjs';
 
 interface MonthlyCategoryCostProps {
   transactions: Array<Tranasction>;
@@ -16,7 +18,9 @@ interface MonthlyCategoryCostProps {
 
 const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions, subCategories, categories }) => {
 
-  const [selectedMonth, setSelectedMonth] = React.useState((new Date().getMonth() + 11) % 12);
+  const { RangePicker } = DatePicker;
+  const [startDate, setStartDate] = React.useState(moment().subtract(1, 'month').startOf('month').toDate());
+  const [endDate, setEndDate] = React.useState(moment().subtract(1, 'month').endOf('month').toDate());
 
   const categoryMap = categories.reduce((map, category) => {
     map.set(category.id, category);
@@ -28,12 +32,14 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
     return map;
   }, new Map<string, SubCategory>());
 
-  const costPerSubCategory = transactions.filter(t => t.transactionAt.getMonth() === selectedMonth).reduce((map, transaction) => {
-    if (!transaction.subCategory?.id) return map;
-    const amount = map.get(transaction.subCategory.id) || 0;
-    map.set(transaction.subCategory.id, amount + transaction.amount);
-    return map;
-  }, new Map<string, number>());
+  const costPerSubCategory = transactions
+    .filter(t => startDate.getTime() <= t.transactionAt.getTime() && t.transactionAt.getTime() <= endDate.getTime())
+    .reduce((map, transaction) => {
+      if (!transaction.subCategory?.id) return map;
+      const amount = map.get(transaction.subCategory.id) || 0;
+      map.set(transaction.subCategory.id, amount + transaction.amount);
+      return map;
+    }, new Map<string, number>());
 
   const costPerCategory = Array.from(costPerSubCategory.entries()).reduce((map, [subCategoryId, cost]) => {
     const subCategory = subCategoryMap.get(subCategoryId);
@@ -77,11 +83,13 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
 
   return (
     <div className='rounded-lg p-2 w-96' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
-      <Select className='w-48 mb-2' value={selectedMonth} onChange={setSelectedMonth}>
-        {Array.from({ length: 12 }).map((_, index) => (
-          <Select.Option key={index + 1} value={index}>{new Date(0, index).toLocaleString('default', { month: 'long' })}</Select.Option>
-        ))}
-      </Select>
+      <RangePicker className='mb-2'
+        format="DD MMM YYYY"
+        value={[dayjs(startDate), dayjs(endDate)]}
+        onChange={(_, [start, end]) => {
+          if (start) setStartDate(moment(start).toDate());
+          if (end) setEndDate(moment(end).toDate());
+        }} />
       <Collapse className='overflow-auto h-64' accordion items={accordionData} />
     </div>
   );

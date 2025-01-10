@@ -1,6 +1,8 @@
 import EnhancedAccountBalances from './components/AccountBalances';
+import IncomeBudgetStats from './components/IncomeBudgetStats';
 import EnhancedMonthlyCategoryCost from './components/MonthlyCategoryCost';
 import TopSpends from './components/TopSpends';
+import TransactionsPie from './components/TransactionsPie';
 
 const DashboardPage: React.FC = () => {
 
@@ -10,6 +12,8 @@ const DashboardPage: React.FC = () => {
         <EnhancedAccountBalances />
         <EnhancedMonthlyCategoryCost />
         <TopSpends />
+        <IncomeBudgetStats />
+        <TransactionsPie />
       </div>
     </div>
   );
