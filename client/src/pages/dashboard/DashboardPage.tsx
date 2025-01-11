@@ -12,8 +12,8 @@ const DashboardPage: React.FC = () => {
         <EnhancedAccountBalances />
         <EnhancedMonthlyCategoryCost />
         <TopSpends />
-        <IncomeBudgetStats />
         <TransactionsPie />
+        <IncomeBudgetStats />
       </div>
     </div>
   );

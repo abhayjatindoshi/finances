@@ -6,8 +6,9 @@ import Category from '../../../db/models/Category';
 import Transaction from '../../../db/models/Transaction';
 import SubCategory from '../../../db/models/SubCategory';
 import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
-import ReactApexChart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
+import { AgCharts } from "ag-charts-react";
+import { AgChartOptions } from 'ag-charts-community';
+
 
 const TransactionsPie: React.FC = () => {
 
@@ -21,22 +22,27 @@ const TransactionsPie: React.FC = () => {
     fetchData();
   }, [setData]);
 
-  const series = data.map(d => -d.total.toFixed(2));
-  const options: ApexOptions = {
-    chart: {
-      width: 500,
-      type: 'pie',
-    },
-    colors: ['#1677FF', '#722ED1', '#13C2C2', '#52C41A', '#EB2F96', '#EB2F96', '#F5222D', '#FA8C16', '#FADB14', '#FA541C', '#2F54EB', '#FAAD14', '#A0D911', '#1554ad', '#51258f', '#138585', '#3c8618', '#a02669', '#a02669', '#a61d24', '#aa6215', '#aa9514', '#aa3e19', '#263ea0', '#aa7714', '#6f9412'],
+  const chartOptions: AgChartOptions = {
+    theme: 'ag-default-dark',
     legend: {
-      show: false
+      enabled: false,
     },
-    labels: data.map(d => d.category.name)
-  };
+    background: {
+      fill: 'rgba(0,0,0,0)',
+    },
+    data: data.map(d => ({ category: d.category.name, total: -d.total.toFixed(2), percentage: `${d.budgetPercentage}%` })),
+    series: [{
+      type: 'pie',
+      angleKey: 'total',
+      legendItemKey: 'category',
+      sectorLabelKey: 'percentage',
+      sectorSpacing: 0,
+    }],
+  }
 
   return (
     <div className='rounded-lg p-4' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
-      <ReactApexChart options={options} series={series} type="donut" height={500} />
+      <AgCharts options={chartOptions} />
     </div>
   );
 };
