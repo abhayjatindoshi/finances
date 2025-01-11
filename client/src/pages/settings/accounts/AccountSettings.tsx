@@ -146,7 +146,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
         <div>{t('app.initialBalance')}</div>
         <div className='flex gap-2 items-center'>
           <Input type='number' prefix={t('app.currency')}
-            className='w-24' disabled={!edit}
+            className='w-36' disabled={!edit}
             value={account.initialBalance}
             onChange={e => setAccount({ ...account, initialBalance: parseFloat(e.target.value) })} />
         </div>

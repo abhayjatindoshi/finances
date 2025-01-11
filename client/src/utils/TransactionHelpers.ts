@@ -82,7 +82,71 @@ export const updateTransaction = async (transaction: TransactionRow, columnId: I
           });
           break;
         }
-        
+
+        const classification = JSON.parse(rawText);
+        if (classification.subCategoryId) {
+          await update(transaction.raw, t => {
+            if (t.subCategory) t.subCategory.id = classification.subCategoryId;
+            if (t.transferAccount) t.transferAccount.id = null;
+          });
+        }
+
+        if (classification.transferAccountId) {
+          await update(transaction.raw, t => {
+            if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
+            if (t.subCategory) t.subCategory.id = null;
+          });
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      break;
+    }
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const updateTransactionRow = async (transaction: TransactionRow, columnName: string, updatedValue: any) => {
+  switch (columnName) {
+    case 'date': {
+      await update(transaction.raw, t => {
+        t.transactionAt = updatedValue ?? new Date(0);
+      });
+      break;
+    }
+
+    case 'title': {
+      await update(transaction.raw, t => {
+        t.title = updatedValue;
+      });
+      break;
+    }
+
+    case 'withdraw': {
+      await update(transaction.raw, t => {
+        t.amount = -updatedValue;
+      });
+      break;
+    }
+
+    case 'deposit': {
+      await update(transaction.raw, t => {
+        t.amount = updatedValue;
+      });
+      break;
+    }
+
+    case 'classification': {
+      try {
+        if (!updatedValue || !updatedValue.value) {
+          await update(transaction.raw, t => {
+            if (t.subCategory) t.subCategory.id = null;
+            if (t.transferAccount) t.transferAccount.id = null;
+          });
+          break;
+        }
+
+        const rawText = updatedValue.value;
         const classification = JSON.parse(rawText);
         if (classification.subCategoryId) {
           await update(transaction.raw, t => {

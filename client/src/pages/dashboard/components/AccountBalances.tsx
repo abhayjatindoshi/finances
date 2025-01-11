@@ -35,7 +35,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
         <List size='small' dataSource={accounts} renderItem={(account) => (
           <List.Item className='flex flex-row items-start justify-between w-full gap-5'>
             <div className='flex flex-col'>
-              <Link to={'/accounts/' + account.id}>
+              <Link to={'/transactions/' + account.id}>
                 <Typography.Text className='grow text-xl' ellipsis={true}>{account.name}</Typography.Text>
               </Link>
               <div className='flex flex-row items-center gap-2'>

@@ -9,15 +9,16 @@ const SettingsPage: React.FC = () => {
   const pageUrl = '/settings';
   const location = useLocation();
   const navigate = useNavigate();
-  const [isPortrait, setIsPortrait] = React.useState(false);
+  const [isPortrait, setIsPortrait] = React.useState(true);
 
   useEffect(() => {
-    if (!isPortrait && location.pathname === '/settings') {
-      navigate('/settings/accounts');
-    }
     const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
     return unsubscribeAll(screenSubscription);
   }, [isPortrait, location.pathname, navigate]);
+
+  if (!isPortrait && location.pathname === '/settings') {
+    navigate('/settings/accounts');
+  }
 
   return (
     <div className='flex flex-row'>

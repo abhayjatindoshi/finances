@@ -34,6 +34,29 @@ svg {
   background-color: var(--ant-color-fill-secondary);
 }
 
+/***************** AG Grid Overrides ****************/
+
+.ag-header {
+  font-weight: normal;
+  font-size: 15px;
+}
+
+.ag-cell-editor-autocomplete {
+  background-color: #1f1f1f;
+  border-radius: 8px;
+  font-size: 13px;
+  padding: 0.25rem;
+}
+
+.ag-cell-editor-autocomplete>div {
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.ag-cell-editor-autocomplete>div.selected {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
 /***************** React Grid Overrides ****************/
 .rg-cell {
   border: 0 !important;
@@ -70,7 +93,7 @@ svg {
   border-radius: 0 !important;
 }
 
-.rg-cell.rg-checkbox-cell label input:checked ~ span {
+.rg-cell.rg-checkbox-cell label input:checked~span {
   border-color: var(--ant-color-primary) !important;
   background-color: var(--ant-color-primary) !important;
 }

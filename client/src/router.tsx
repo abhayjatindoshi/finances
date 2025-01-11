@@ -11,6 +11,8 @@ import ErrorPage from "./pages/ErrorPage";
 import HomePage from "./pages/HomePage";
 import RedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountPage";
 import SettingsPage from "./pages/settings/SettingsPage";
+import TransactionsPage from "./pages/transactions/TransactionsPage";
+import RedirectToAllTransactionsPage from "./pages/transactions/RedirectToAllTransactionsPage";
 
 const router = createBrowserRouter([
   {
@@ -36,6 +38,12 @@ const router = createBrowserRouter([
       }, {
         path: 'budget/:tab',
         element: <BudgetPage />,
+      }, {
+        path: 'transactions',
+        element: <RedirectToAllTransactionsPage />
+      }, {
+        path: 'transactions/:accountId',
+        element: <TransactionsPage />
       }, {
         path: 'settings',
         element: <SettingsPage />,
