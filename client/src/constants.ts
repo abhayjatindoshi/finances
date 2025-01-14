@@ -16,6 +16,8 @@ export const antTheme = {
   }
 }
 
+export const syncTimeout = 20 * 1000; // 20 seconds
+
 export const dateTimeFormat = Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' });
 export const moneyFormat = Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
 

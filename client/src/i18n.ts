@@ -56,6 +56,7 @@ const resources = {
       'app.settings': 'Settings',
       'app.subCategories': 'Categories',
       'app.subCategory': 'Category',
+      'app.sync': 'Sync',
       'app.syncing': 'Syncing recent changes from the server.',
       'app.time': 'Time',
       'app.title': 'Title',

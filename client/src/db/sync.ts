@@ -1,35 +1,78 @@
 import { synchronize, SyncPullArgs, SyncPullResult, SyncPushResult } from '@nozbe/watermelondb/sync'
 import database from './database';
+import { syncTimeout } from '../constants';
+import { sleep } from '../utils/Common';
+import { createGlobalVariable } from '../utils/GlobalVariable';
 
-let isRunning = false;
+export interface SyncArgs {
+  replacement: boolean
+}
 
-export async function sync() {
-  if (isRunning) return;
+async function sync(syncArgs: SyncArgs = { replacement: false }): Promise<void> {
   await synchronize({
     database,
     pullChanges: async (args: SyncPullArgs): Promise<SyncPullResult> => {
-      if (isRunning) throw new Error('Sync already in progress');
-      isRunning = true;
       const urlParams = new URLSearchParams({
         lastPulledAt: args.lastPulledAt?.toString() || '',
         schemaVersion: args.schemaVersion.toString(),
-        migration: JSON.stringify(args.migration)
+        migration: JSON.stringify(args.migration),
+        replacement: syncArgs.replacement.toString(),
       }).toString();
       const response = await fetch(`/api/v1/sync/pull?${urlParams}`, { method: 'POST' })
         .then(res => res.json()) as SyncPullResult;
-      isRunning = false;
       return response;
     },
     pushChanges: async ({ changes, lastPulledAt }): Promise<SyncPushResult> => {
-      if (isRunning) throw new Error('Sync already in progress');
-      isRunning = true;
       const response = await fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
         method: 'POST',
         body: JSON.stringify(changes),
         headers: { 'Content-Type': 'application/json' }
       }).then(res => res.json()) as SyncPushResult;
-      isRunning = false;
       return response;
     }
   });
 }
+
+const awaitingExecution: Array<{ args: SyncArgs, resolve: () => void }> = [];
+const waitingForNextSync: Array<() => void> = [];
+const syncing = createGlobalVariable<boolean>('syncing', false);
+
+export async function syncNow(replace: boolean): Promise<void> {
+  return new Promise<void>(resolve => {
+    awaitingExecution.push({ args: { replacement: replace }, resolve });
+  });
+}
+
+export async function waitForNextSync(): Promise<void> {
+  return new Promise<void>(resolve => {
+    waitingForNextSync.push(resolve);
+  });
+}
+
+async function syncLoop() {
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    if (awaitingExecution.length > 0) {
+      while (awaitingExecution.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const { args, resolve } = awaitingExecution.pop()!;
+        syncing.next(true);
+        await sync(args);
+        syncing.next(false);
+        resolve();
+        waitingForNextSync.forEach(f => f());
+        waitingForNextSync.splice(0, waitingForNextSync.length);
+      }
+    } else {
+      syncing.next(true);
+      await sync();
+      syncing.next(false);
+      waitingForNextSync.forEach(f => f());
+      waitingForNextSync.splice(0, waitingForNextSync.length);
+    }
+
+    await sleep(syncTimeout)
+  }
+}
+
+syncLoop();

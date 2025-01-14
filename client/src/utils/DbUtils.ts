@@ -2,7 +2,6 @@ import { Q } from "@nozbe/watermelondb";
 import database from "../db/database";
 import Account from "../db/models/Account";
 import Tranasction from "../db/models/Transaction";
-import { sync } from "../db/sync";
 import Category from "../db/models/Category";
 import TableName from "../db/TableName";
 import SubCategory from "../db/models/SubCategory";
@@ -66,8 +65,4 @@ export async function getBudgetData(): Promise<Array<CategoryData>> {
     return { category, transactions: categoryTransactions, total, monthlyTotal, yearlyLimit, budgetPercentage };
   }).filter(category => category.total < 0)
     .sort((a, b) => b.budgetPercentage - a.budgetPercentage);
-}
-
-export async function autoSync() {
-  setInterval(() => sync(), 20000) // 20 seconds
 }

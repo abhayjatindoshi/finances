@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import { User } from "../pages/AppLoaderPage";
 import { useTranslation } from "react-i18next";
 import { logoutUrl } from "../constants";
-import { DownloadOutlined, LogoutOutlined } from "@ant-design/icons";
+import { DownloadOutlined, LogoutOutlined, SyncOutlined } from "@ant-design/icons";
 import { BeforeInstallPromptEvent } from "../utils/BeforeInstallPromptEvent";
+import { syncNow } from "../db/sync";
 
 interface ProfileProps {
   user: User
@@ -37,6 +38,14 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
         key: 'installApp',
         onClick: () => {
           installPrompt.prompt();
+        }
+      },
+      {
+        label: t('app.sync'),
+        icon: <SyncOutlined />,
+        key: 'sync',
+        onClick: () => {
+          syncNow(true);
         }
       },
       {

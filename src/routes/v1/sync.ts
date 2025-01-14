@@ -9,8 +9,9 @@ router.post('/pull', authenticated, async (req, res) => {
     let lastPulledAt = parseInt(req.query['lastPulledAt'] as string);
     let schemaVersion = req.query['schemaVersion'];
     let migration = req.query['migration'];
+    let replacement = req.query['replacement'] === 'true';
 
-    if (!lastPulledAt || isNaN(lastPulledAt)) {
+    if (!lastPulledAt || isNaN(lastPulledAt) || replacement) {
         lastPulledAt = 0;
     }
 
@@ -22,11 +23,14 @@ router.post('/pull', authenticated, async (req, res) => {
             return changes;
         }, {} as ChangeSet))
 
-    let response = {
+    let response: any = {
         changes,
         timestamp: new Date().getTime()
     };
 
+    if (replacement) {
+        response['experimentalStrategy'] = 'replacement';
+    }
     res.json(response);
 })
 

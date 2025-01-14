@@ -1,10 +1,10 @@
 import { createGlobalVariable } from '../utils/GlobalVariable';
 import { loginUrl, profileApiUrl } from '../constants';
 import { Spin } from 'antd';
-import { sync } from '../db/sync';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect } from 'react';
+import { waitForNextSync } from '../db/sync';
 
 export interface User {
   id: string;
@@ -38,7 +38,7 @@ const AppLoaderPage: React.FC<AppLoaderPageProps> = ({ onLoadingComplete }) => {
           user.next(data as User);
           setLoadingTip(t('app.syncing'));
 
-          sync().then(() => {
+          waitForNextSync().then(() => {
             onLoadingComplete?.();
           });
 

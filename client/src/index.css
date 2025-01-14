@@ -34,6 +34,12 @@ svg {
   background-color: var(--ant-color-fill-secondary);
 }
 
+.MuiLinearProgress-root {
+  height: 2px !important;
+  background-color: unset !important;
+  position: absolute;
+}
+
 /***************** AG Grid Overrides ****************/
 
 .ag-header {
