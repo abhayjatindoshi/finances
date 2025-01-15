@@ -35,7 +35,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
     const hoverColor = `var(--ant-${pickRandomByHash(account.name, antColors)}-6)`;
 
     return <Link to={'/transactions/' + account.id} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <Card key={account.id} className='w-48' style={{ backgroundColor: hover ? hoverColor : backgroundColor, transition: 'background-color 0.2s' }} hoverable={true}>
+      <Card key={account.id} className='min-w-36' style={{ backgroundColor: hover ? hoverColor : backgroundColor, transition: 'background-color 0.2s' }} hoverable={true}>
         <Statistic title={account.name} value={moneyFormat.format(balanceMap.get(account)?.balance ?? 0)} />
         <div className='flex flex-row items-start justify-between' style={{ color: 'var(--ant-color-text-description)' }}>
           <span className='text-xs'>
