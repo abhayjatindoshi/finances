@@ -17,6 +17,7 @@ export const antTheme = {
 }
 
 export const syncTimeout = 20 * 1000; // 20 seconds
+export const antColors = ['blue', 'purple', 'cyan', 'green', 'magenta', 'pink', 'red', 'orange', 'yellow', 'volcano', 'geekblue', 'gold', 'lime'];
 
 export const dateTimeFormat = Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' });
 export const moneyFormat = Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });

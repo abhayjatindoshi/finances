@@ -12,6 +12,8 @@ import Account from '../../../db/models/Account';
 import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
 import { unsubscribeAll } from '../../../utils/ComponentUtils';
 import { subscribeTo } from '../../../utils/GlobalVariable';
+import { pickRandomByHash } from '../../../utils/Common';
+import { antColors } from '../../../constants';
 
 interface AccountsSettingsListProps {
   accounts: Array<Account>
@@ -36,12 +38,6 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
     return unsubscribeAll(screenSubscription);
   }, [accounts]);
 
-  function randomBackgroundColor(account: Account): string {
-    const choices = ['var(--ant-blue-5)', 'var(--ant-green-5)', 'var(--ant-yellow-5)', 'var(--ant-red-5)'];
-    const hash = account.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    return choices[hash % choices.length];
-  }
-
   return (
     <div className='flex flex-col app-content-height'>
       <div className='flex flex-row m-2'>
@@ -60,7 +56,7 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
           }}
           onClick={() => navigate('/settings/accounts/' + account.id)}>
           <div className='flex flex-row items-center mx-3'>
-            <Avatar size={'large'} shape='square' style={{ backgroundColor: randomBackgroundColor(account) }} >{account.name.charAt(0).toUpperCase()}</Avatar>
+            <Avatar size={'large'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account.name, antColors)}-6)` }} >{account.name.charAt(0).toUpperCase()}</Avatar>
             <div className='flex flex-col ml-3 gap-1'>
               <div>{account.name}</div>
               <div className='text-xs' style={{

@@ -1,15 +1,16 @@
 import { Database, Q } from '@nozbe/watermelondb';
 import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
-import { List, Tooltip, Typography } from 'antd';
+import { Card, Statistic, Tooltip } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
 import Account from '../../../db/models/Account';
-import Money from '../../../common/Money';
 import React, { useEffect } from 'react';
 import TableName from '../../../db/TableName';
 import moment from 'moment';
-import { dateTimeFormat } from '../../../constants';
+import { antColors, dateTimeFormat, moneyFormat } from '../../../constants';
 import { Link } from 'react-router-dom';
+import { pickRandomByHash } from '../../../utils/Common';
+import { SwapOutlined } from '@ant-design/icons';
 
 interface AccountBalancesProps {
   accounts: Array<Account>;
@@ -28,31 +29,33 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
     fetchBalances();
   }, [accounts]);
 
+  function AccountCard({ account }: { account: Account }) {
+    const [hover, setHover] = React.useState(false);
+    const backgroundColor = `var(--ant-${pickRandomByHash(account.name, antColors)}-4)`;
+    const hoverColor = `var(--ant-${pickRandomByHash(account.name, antColors)}-6)`;
+
+    return <Link to={'/transactions/' + account.id} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+      <Card key={account.id} className='w-48' style={{ backgroundColor: hover ? hoverColor : backgroundColor, transition: 'background-color 0.2s' }} hoverable={true}>
+        <Statistic title={account.name} value={moneyFormat.format(balanceMap.get(account)?.balance ?? 0)} />
+        <div className='flex flex-row items-start justify-between' style={{ color: 'var(--ant-color-text-description)' }}>
+          <span className='text-xs'>
+            <Tooltip title={dateTimeFormat.format(balanceMap.get(account)?.lastUpdate)}>
+              {moment(balanceMap.get(account)?.lastUpdate).fromNow(true)} {t('app.ago')}
+            </Tooltip>
+          </span>
+          <span className='text-xs'>
+            <SwapOutlined /> {balanceMap.get(account)?.transactionCount}
+          </span>
+        </div>
+      </Card>
+    </Link>
+  }
+
   return (
-    <div className='rounded-lg p-2 w-96' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
+    <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '26rem' }}>
       <div className='text-xl font-semibold mb-2'>{t('app.currentBalance')}</div>
-      <div className='overflow-auto'>
-        <List size='small' dataSource={accounts} renderItem={(account) => (
-          <List.Item className='flex flex-row items-start justify-between w-full gap-5'>
-            <div className='flex flex-col'>
-              <Link to={'/transactions/' + account.id}>
-                <Typography.Text className='grow text-xl' ellipsis={true}>{account.name}</Typography.Text>
-              </Link>
-              <div className='flex flex-row items-center gap-2'>
-                <span className='text-xs'>
-                  <Tooltip title={dateTimeFormat.format(balanceMap.get(account)?.lastUpdate)}>
-                    {moment(balanceMap.get(account)?.lastUpdate).fromNow(true)} {t('app.ago')}
-                  </Tooltip>
-                </span>
-                <span>•</span>
-                <span className='text-xs'>
-                  {balanceMap.get(account)?.transactionCount} {t('app.transactions')}
-                </span>
-              </div>
-            </div>
-            <div className='text-nowrap'><Money amount={balanceMap.get(account)?.balance} /></div>
-          </List.Item>
-        )} />
+      <div className='flex flex-wrap gap-2 items-center justify-center'>
+        {accounts.map(account => <AccountCard key={account.id} account={account} />)}
       </div>
     </div>
   );

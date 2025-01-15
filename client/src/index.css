@@ -37,7 +37,7 @@ svg {
 .MuiLinearProgress-root {
   height: 2px !important;
   background-color: unset !important;
-  position: absolute;
+  position: absolute !important;
 }
 
 /***************** AG Grid Overrides ****************/

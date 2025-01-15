@@ -3,9 +3,9 @@ import { ColDef, AllCommunityModule, ModuleRegistry, colorSchemeDark, themeAlpin
 import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
 import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
 import { Database, Q } from '@nozbe/watermelondb';
-import { dateTimeFormat, moneyFormat } from '../../constants';
+import { antColors, dateTimeFormat, moneyFormat } from '../../constants';
 import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
-import { Drawer, Dropdown, Input, Popconfirm } from 'antd';
+import { Avatar, Drawer, Dropdown, Input, Popconfirm } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
@@ -19,6 +19,7 @@ import IconButton from '../../common/IconButton';
 import ImportPage from '../accounts/import/ImportPage';
 import { useForceUpdate } from '../../utils/ComponentUtils';
 import database from '../../db/database';
+import { pickRandomByHash } from '../../utils/Common';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -45,7 +46,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
     selectedTransactionIds, account?.initialBalance ?? 0);
   const theme = themeAlpine.withPart(colorSchemeDark)
     .withParams({
-      spacing: 3,
+      spacing: 5,
       backgroundColor: '#141414'
     })
 
@@ -77,6 +78,32 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
     label: a.name
   }))];
 
+  const AccountRenderer = ({ account }: { account: Account | undefined }) => {
+    if (!account) return <></>
+    return <div className='flex flex-row items-center gap-2'>
+      <Avatar size={'small'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account.name, antColors)}-6)` }} >{account.name.charAt(0).toUpperCase()}</Avatar>
+      {account.name}
+    </div>
+  }
+
+  const SubCategoryRenderer = ({ subCategory }: { subCategory: SubCategory | undefined }) => {
+    if (!subCategory) return <></>
+    return <div className='flex flex-row items-center gap-2'>
+      <Avatar size={'small'} shape='circle' style={{ backgroundColor: `var(--ant-${pickRandomByHash(subCategory.name, antColors)}-6)` }} >{subCategory.name.charAt(0).toUpperCase()}</Avatar>
+      {subCategory.name}
+    </div>
+  }
+
+  const ClassificationRenderer = ({ transaction }: { transaction: Transaction }) => {
+    if (transaction.subCategory?.id) {
+      return <SubCategoryRenderer subCategory={subCategories.find(s => s.id === transaction.subCategory?.id)} />
+    }
+    if (transaction.transferAccount?.id) {
+      return <AccountRenderer account={accounts.find(a => a.id === transaction.transferAccount?.id)} />
+    }
+    return <></>
+  }
+
   const columns: Array<ColDef<TransactionRow>> = [
     {
       width: 30,
@@ -91,20 +118,29 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
       valueGetter: 'node.rowIndex + 1'
     },
     {
-      width: 150,
+      minWidth: 150,
+      width: 170,
       headerName: t('app.account'),
       field: 'raw.account',
       hide: account !== undefined,
-      valueGetter: (row) => accounts.find(a => a.id === row.data?.raw?.account?.id)?.name
+      cellRendererSelector: params => ({
+        params: { account: accounts.find(a => a.id === params.data?.raw.account.id) },
+        component: AccountRenderer
+      })
     },
     {
-      width: 150,
+      minWidth: 170,
+      width: 200,
       headerName: t('app.subCategory'),
       field: 'classification',
       editable: true,
       cellEditor: AutocompleteSelectCellEditor,
       cellEditorParams: { selectData: classificationOptions },
-      valueGetter: (row) => getClassificationTitle(row.data?.classification)
+      valueGetter: (row) => getClassificationTitle(row.data?.classification),
+      cellRendererSelector: params => ({
+        params: { transaction: params.data?.raw },
+        component: ClassificationRenderer
+      })
     },
     {
       width: 100,
@@ -177,9 +213,20 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
         <div className='m-2 flex flex-row gap-2'>
           <Dropdown menu={{
             onClick: (selection) => navigate(`/transactions/${selection.key}`),
-            items: [{ key: all, label: t('app.all') }, ...accounts.map(a => ({ key: a.id, label: a.name }))]
+            items: [{
+              icon: <Avatar size={'small'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(all, antColors)}-6)` }} >{all.charAt(0).toUpperCase()}</Avatar>,
+              key: all,
+              label: t('app.all')
+            }, ...accounts.map(a => ({
+              key: a.id,
+              label: a.name,
+              icon: <Avatar size={'small'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(a.name, antColors)}-6)` }} >{a.name.charAt(0).toUpperCase()}</Avatar>
+            }))]
           }}>
-            <div className='text-xl'>
+            <div className='flex flex-row gap-2 items-center text-xl'>
+              <Avatar shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account?.name ?? all, antColors)}-6)` }} >
+                {(account?.name ?? all).charAt(0).toUpperCase()}
+              </Avatar>
               {account ? account.name : t('app.all')} <DownOutlined />
             </div>
           </Dropdown>
