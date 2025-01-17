@@ -8,6 +8,7 @@ drop table if exists users;
 create table users
 (
     id VARCHAR(25) not null primary key,
+    user_id VARCHAR(25) not null,
     name text not null,
     email text not null,
     picture text

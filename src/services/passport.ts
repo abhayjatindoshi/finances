@@ -5,9 +5,7 @@ import path from "path";
 import passport from "passport";
 import session from "express-session";
 import SessionStore from "session-file-store";
-import UserService from "../dao/user-service";
-
-const userService = new UserService();
+import userService from "../dao/user-service";
 
 export function setupAuthentication(prefix: string, app: Application) {
   initializePassport();

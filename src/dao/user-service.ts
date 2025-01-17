@@ -1,6 +1,7 @@
 import { Profile } from "passport"
 import db from "../services/db"
 import ApiError, { ApiErrorCode } from "../api-error"
+import { cryptoRandomId } from "../server-utils";
 
 export interface User {
     id: string,
@@ -9,7 +10,7 @@ export interface User {
     picture?: string
 }
 
-export default class UserService {
+export default new class UserService {
 
     private allowedEmails: string[] = process.env.ALLOWED_EMAILS?.split(',') ?? []
 
@@ -23,8 +24,8 @@ export default class UserService {
         }
     }
 
-    public async getUser(id: string): Promise<User | undefined> {
-        return await db.fetchOne`select * from users where id = ${id}`
+    public async getUser(userId: string): Promise<User | undefined> {
+        return await db.fetchOne`select * from users where user_id = ${userId}`
     }
 
     public async createUserIfNotExists(profile: Profile): Promise<User> {
@@ -38,6 +39,7 @@ export default class UserService {
         }
 
         const rows = await db.execute`insert into users values (
+            ${cryptoRandomId()},    
             ${profile.id}, ${profile.displayName},
             ${profile.emails[0].value},
             ${profile.photos[0].value}
@@ -50,4 +52,4 @@ export default class UserService {
         user = await this.getUser(profile.id);
         return user!;
     }
-}
+}();
