@@ -24,6 +24,7 @@ export default new class TransactionService extends BaseService<Transaction> {
             amount: entity.amount,
             created_at: entity.created_at,
             updated_at: entity.updated_at,
+            tenant_id: entity.tenant_id,
         }
     }
     validate(entity: Transaction): Transaction {

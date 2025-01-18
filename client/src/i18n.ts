@@ -46,6 +46,7 @@ const resources = {
       'app.needs': 'Needs',
       'app.new': 'New',
       'app.no': 'No',
+      'app.noTenants': 'You don\'t have an account created yet. Please contact Abhay Jatin Doshi to create an account.',
       'app.none': 'None',
       'app.percentage': 'Percentage',
       'app.readingTransactions': 'Reading transactions',

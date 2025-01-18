@@ -6,12 +6,12 @@ import Money from '../../common/Money';
 import ImportPage from './import/ImportPage';
 import IconButton from '../../common/IconButton';
 import Account from '../../db/models/Account';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForceUpdate } from '../../utils/ComponentUtils';
 import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined } from '@ant-design/icons';
-import { Database, Q } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import { Drawer, Dropdown, MenuProps, Popconfirm, Statistic } from 'antd';
 import database from '../../db/database';
 
@@ -43,7 +43,7 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
   }
 
   const deleteTransactions = async () => {
-    await database.write(async () => {
+    await database().write(async () => {
       const transactions = selectedTransactionIds
         .map(id => allTransactions.find(t => t.id === id))
       transactions.forEach(t => t?.markAsDeleted());
@@ -98,9 +98,9 @@ const AccountsPage: React.FC<AccountsPageProps> = ({ accounts, allTransactions }
 };
 
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
-  allTransactions: database.collections.get<Tranasction>(TableName.Transactions).query(Q.sortBy('transactionAt', 'desc'))
+const enhance = withObservables([], () => ({
+  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
+  allTransactions: database().collections.get<Tranasction>(TableName.Transactions).query(Q.sortBy('transactionAt', 'desc'))
 }));
-const EnhancedAccountsPage = withDatabase(enhance(AccountsPage));
+const EnhancedAccountsPage = enhance(AccountsPage);
 export default EnhancedAccountsPage;

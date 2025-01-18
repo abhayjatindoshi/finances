@@ -62,8 +62,8 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
 
   function importData() {
     if (selectedTransactions.length === 0) return;
-    database.write(async () => {
-      const transactionCollection = database.collections.get<Tranasction>(TableName.Transactions);
+    database().write(async () => {
+      const transactionCollection = database().collections.get<Tranasction>(TableName.Transactions);
       const promises = selectedTransactions.map(transaction => transactionCollection.create(t => {
         t.account.set(account);
         t.transactionAt = transaction.transactionAt;

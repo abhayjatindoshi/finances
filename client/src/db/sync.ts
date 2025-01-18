@@ -9,8 +9,9 @@ export interface SyncArgs {
 }
 
 async function sync(syncArgs: SyncArgs = { replacement: false }): Promise<void> {
+  const db = database();
   await synchronize({
-    database,
+    database: db,
     pullChanges: async (args: SyncPullArgs): Promise<SyncPullResult> => {
       const urlParams = new URLSearchParams({
         lastPulledAt: args.lastPulledAt?.toString() || '',
@@ -18,16 +19,23 @@ async function sync(syncArgs: SyncArgs = { replacement: false }): Promise<void> 
         migration: JSON.stringify(args.migration),
         replacement: syncArgs.replacement.toString(),
       }).toString();
-      const response = await fetch(`/api/v1/sync/pull?${urlParams}`, { method: 'POST' })
+      const response = await fetch(`/api/v1/sync/pull?${urlParams}`, { method: 'POST', headers: { 'tenant-id': db.adapter.dbName ?? '' } })
         .then(res => res.json()) as SyncPullResult;
       return response;
     },
     pushChanges: async ({ changes, lastPulledAt }): Promise<SyncPushResult> => {
-      const response = await fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
+      const request = fetch(`/api/v1/sync/push?lastPulledAt=${lastPulledAt}`, {
         method: 'POST',
         body: JSON.stringify(changes),
-        headers: { 'Content-Type': 'application/json' }
-      }).then(res => res.json()) as SyncPushResult;
+        headers: {
+          'Content-Type': 'application/json',
+          'tenant-id': db.adapter.dbName ?? '',
+        }
+      })
+      request.catch(err => {
+        throw new Error(`Error pushing changes: ${err}`);
+      })
+      const response = await request.then(res => res.json()) as SyncPushResult;
       return response;
     }
   });
@@ -49,7 +57,7 @@ export async function waitForNextSync(): Promise<void> {
   });
 }
 
-async function syncLoop() {
+export async function syncLoop() {
   // eslint-disable-next-line no-constant-condition
   while (true) {
     if (awaitingExecution.length > 0) {
@@ -74,5 +82,3 @@ async function syncLoop() {
     await sleep(syncTimeout)
   }
 }
-
-syncLoop();

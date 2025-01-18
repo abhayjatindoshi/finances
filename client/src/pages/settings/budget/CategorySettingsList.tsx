@@ -1,5 +1,5 @@
-import { Database, Q } from '@nozbe/watermelondb';
-import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
+import { Q } from '@nozbe/watermelondb';
+import { withObservables } from '@nozbe/watermelondb/react';
 import React, { ReactNode, useEffect } from 'react';
 import Category from '../../../db/models/Category';
 import { Avatar, List } from 'antd';
@@ -12,6 +12,7 @@ import { unsubscribeAll } from '../../../utils/ComponentUtils';
 import { subscribeTo } from '../../../utils/GlobalVariable';
 import { antColors } from '../../../constants';
 import { pickRandomByHash } from '../../../utils/Common';
+import database from '../../../db/database';
 
 interface CategorySettingsListProps {
   categories: Array<Category>
@@ -74,8 +75,8 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   );
 };
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>('categories').query(Q.sortBy('name')),
+const enhance = withObservables([], () => ({
+  categories: database().collections.get<Category>('categories').query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettingsList = withDatabase(enhance(CategorySettingsList));
+const EnhancedCategorySettingsList = enhance(CategorySettingsList);
 export default EnhancedCategorySettingsList;

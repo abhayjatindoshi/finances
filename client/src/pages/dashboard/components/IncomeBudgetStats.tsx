@@ -1,6 +1,6 @@
-import { Database, Q } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import { useTranslation } from 'react-i18next';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import React from 'react';
 import TableName from '../../../db/TableName';
 import Category, { CategoryType } from '../../../db/models/Category';
@@ -8,6 +8,7 @@ import Transaction from '../../../db/models/Transaction';
 import Tranasction from '../../../db/models/Transaction';
 import SubCategory from '../../../db/models/SubCategory';
 import Money from '../../../common/Money';
+import database from '../../../db/database';
 
 interface IncomeBudgetStatsProps {
   categories: Array<Category>;
@@ -55,10 +56,10 @@ const IncomeBudgetStats: React.FC<IncomeBudgetStatsProps> = ({ categories, subCa
     </div>
   );
 };
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
-  subCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
-  transactions: database.collections.get<Transaction>(TableName.Transactions).query(),
+const enhance = withObservables([], () => ({
+  categories: database().collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
+  transactions: database().collections.get<Transaction>(TableName.Transactions).query(),
 }));
-const EnhancedIncomeBudgetStats = withDatabase(enhance(IncomeBudgetStats));
+const EnhancedIncomeBudgetStats = enhance(IncomeBudgetStats);
 export default EnhancedIncomeBudgetStats;

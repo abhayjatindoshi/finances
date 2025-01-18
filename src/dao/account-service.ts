@@ -16,6 +16,7 @@ export default new class AccountService extends BaseService<Account> {
             initial_balance: entity.initial_balance,
             created_at: entity.created_at,
             updated_at: entity.updated_at,
+            tenant_id: entity.tenant_id,
         }
     }
     validate(entity: Account): Account {

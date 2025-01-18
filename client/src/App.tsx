@@ -6,6 +6,7 @@ import { createGlobalVariable, subscribeTo } from './utils/GlobalVariable';
 import AppLoaderPage from './pages/AppLoaderPage';
 import LinearProgress from '@mui/material/LinearProgress';
 import { unsubscribeAll } from './utils/ComponentUtils';
+import { syncLoop } from './db/sync';
 
 
 const { Header, Content } = Layout;
@@ -23,6 +24,10 @@ function App() {
     }
     window.addEventListener('resize', resizeHelper);
     resizeHelper();
+
+    if (!loading) {
+      syncLoop();
+    }
 
     const syncSubscription = subscribeTo('syncing', b => setSyncing(b as boolean));
     return unsubscribeAll(syncSubscription);

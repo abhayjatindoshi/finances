@@ -4,13 +4,21 @@ import { Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect } from 'react';
-import { waitForNextSync } from '../db/sync';
+import { loadDatabase } from '../db/database';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   picture: string;
+}
+
+export interface Tenant {
+  id: string;
+  name: string;
+  created_at: number;
+  updated_at: number;
+  users: User[];
 }
 
 interface AppLoaderPageProps {
@@ -25,29 +33,28 @@ const AppLoaderPage: React.FC<AppLoaderPageProps> = ({ onLoadingComplete }) => {
   const [loadingTip, setLoadingTip] = React.useState<string>('');
 
   useEffect(() => {
-    const loginApp = async () => {
-      setLoadingTip(t('app.loggingIn'));
-      await fetch(profileApiUrl)
-        .then(res => res.json())
-        .then((data: { code: string } | User) => {
-          if ((data as { code: string }).code === 'UNAUTHORIZED') {
-            window.location.href = loginUrl;
-            return;
-          }
 
-          user.next(data as User);
-          setLoadingTip(t('app.syncing'));
-
-          waitForNextSync().then(() => {
-            onLoadingComplete?.();
-          });
-
-        })
-        .catch(() => {
-          navigate('/error?error=app.failedLogin');
-        });
+    async function loadCurrentUser(): Promise<void> {
+      const userResponse = await fetch(profileApiUrl).then(res => res.json());
+      if ((userResponse as { code: string }).code === 'UNAUTHORIZED') {
+        window.location.href = loginUrl;
+        return;
+      }
+      user.next(userResponse as User);
     }
 
+    const loginApp = async () => {
+      try {
+        setLoadingTip(t('app.loggingIn'));
+        await loadCurrentUser();
+        setLoadingTip(t('app.syncing'));
+        await loadDatabase();
+        onLoadingComplete?.();
+      } catch (error) {
+        console.error(error);
+        navigate('/error?error=app.failedLogin');
+      }
+    }
     loginApp();
 
   }, [navigate, onLoadingComplete, t, user]);

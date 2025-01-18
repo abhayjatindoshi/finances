@@ -1,5 +1,5 @@
-import { Database, Q } from '@nozbe/watermelondb';
-import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
+import { Q } from '@nozbe/watermelondb';
+import { withObservables } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
 import { Avatar, List } from 'antd';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -14,6 +14,7 @@ import { unsubscribeAll } from '../../../utils/ComponentUtils';
 import { subscribeTo } from '../../../utils/GlobalVariable';
 import { pickRandomByHash } from '../../../utils/Common';
 import { antColors } from '../../../constants';
+import database from '../../../db/database';
 
 interface AccountsSettingsListProps {
   accounts: Array<Account>
@@ -70,8 +71,8 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   );
 };
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
+const enhance = withObservables([], () => ({
+  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettingsList = withDatabase(enhance(AccountsSettingsList));
+const EnhancedCategorySettingsList = enhance(AccountsSettingsList);
 export default EnhancedCategorySettingsList;

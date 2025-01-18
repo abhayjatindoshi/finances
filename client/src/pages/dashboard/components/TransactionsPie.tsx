@@ -1,5 +1,5 @@
-import { Database, Q } from '@nozbe/watermelondb';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { Q } from '@nozbe/watermelondb';
+import { withObservables } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
 import TableName from '../../../db/TableName';
 import Category from '../../../db/models/Category';
@@ -8,6 +8,7 @@ import SubCategory from '../../../db/models/SubCategory';
 import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
 import { AgCharts } from "ag-charts-react";
 import { AgChartOptions } from 'ag-charts-community';
+import database from '../../../db/database';
 
 
 const TransactionsPie: React.FC = () => {
@@ -46,10 +47,10 @@ const TransactionsPie: React.FC = () => {
     </div>
   );
 };
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
-  subCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
-  transactions: database.collections.get<Transaction>(TableName.Transactions).query(),
+const enhance = withObservables([], () => ({
+  categories: database().collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
+  transactions: database().collections.get<Transaction>(TableName.Transactions).query(),
 }));
-const EnhancedTransactionsPie = withDatabase(enhance(TransactionsPie));
+const EnhancedTransactionsPie = enhance(TransactionsPie);
 export default EnhancedTransactionsPie;

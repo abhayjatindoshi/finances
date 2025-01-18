@@ -1,9 +1,9 @@
 import { CloseCircleOutlined, DeleteOutlined, EditOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input, Popconfirm, Segmented, Select } from 'antd';
-import { Q, Database } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import Category, { CategoryType, CategoryType as EnumCategoryType } from '../../../db/models/Category';
 import database from '../../../db/database';
 import IconButton from '../../../common/IconButton';
@@ -66,7 +66,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
     const subCategories = allSubCategories?.filter(subCategory => subCategory.category.id === categoryId);
     setSubCategories(subCategories);
 
-    database.collections.get<Tranasction>(TableName.Transactions)
+    database().collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('sub_category_id', Q.oneOf(subCategories.map(s => s.id))))
       .fetchCount().then(setTotalDependencyCount);
 
@@ -77,7 +77,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
 
   function deleteCategory() {
     if (totalDependencyCount > 0) return;
-    database.write(async () => {
+    database().write(async () => {
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
       await dbCategory.markAsDeleted();
@@ -95,15 +95,15 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   async function saveCategory() {
     setSaving(true);
     if (categoryId === 'new') {
-      await database.write(async () => {
-        const created = await database.collections.get<Category>(TableName.Categories)
+      await database().write(async () => {
+        const created = await database().collections.get<Category>(TableName.Categories)
           .create(c => setToCategory(category, c));
         navigate(`/settings/budget/${created.id}`);
       });
     } else {
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
-      await database.write(async () => {
+      await database().write(async () => {
         await dbCategory.update(c => setToCategory(category, c));
       });
     }
@@ -190,9 +190,9 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   );
 };
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
-  allSubCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
+const enhance = withObservables([], () => ({
+  categories: database().collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  allSubCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettings = withDatabase(enhance(CategorySettings));
+const EnhancedCategorySettings = enhance(CategorySettings);
 export default EnhancedCategorySettings;

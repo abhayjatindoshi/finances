@@ -170,7 +170,7 @@ export const updateTransactionRow = async (transaction: TransactionRow, columnNa
 }
 
 const update = async (transaction: Transaction, updater: (t: Transaction) => void) => {
-  return await database.write(async () => {
+  return await database().write(async () => {
     await transaction.update(updater);
   });
 }

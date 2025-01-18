@@ -13,8 +13,8 @@ export interface AccountBalance {
 }
 
 export async function getBalanceMap(): Promise<Map<Account, AccountBalance>> {
-  const accounts = await database.collections.get<Account>('accounts').query().fetch();
-  const transactionCollection = database.collections.get<Tranasction>('transactions');
+  const accounts = await database().collections.get<Account>('accounts').query().fetch();
+  const transactionCollection = database().collections.get<Tranasction>('transactions');
   const result = new Map<Account, AccountBalance>();
 
   for (const account of accounts) {
@@ -47,9 +47,9 @@ export interface CategoryData {
 }
 
 export async function getBudgetData(): Promise<Array<CategoryData>> {
-  const categories = await database.collections.get<Category>(TableName.Categories).query().fetch();
-  const subCategories = await database.collections.get<SubCategory>(TableName.SubCategories).query().fetch();
-  const transactions = await database.collections.get<Tranasction>(TableName.Transactions).query().fetch();
+  const categories = await database().collections.get<Category>(TableName.Categories).query().fetch();
+  const subCategories = await database().collections.get<SubCategory>(TableName.SubCategories).query().fetch();
+  const transactions = await database().collections.get<Tranasction>(TableName.Transactions).query().fetch();
 
   return categories.map(category => {
     const subCategoriesIds = subCategories.filter(subCategory => subCategory.category.id === category.id).map(subCategory => subCategory.id);

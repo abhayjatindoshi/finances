@@ -2,13 +2,13 @@ import { AgGridReact } from 'ag-grid-react';
 import { ColDef, AllCommunityModule, ModuleRegistry, colorSchemeDark, themeAlpine, CellEditRequestEvent } from 'ag-grid-community';
 import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
 import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
-import { Database, Q } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import { antColors, dateTimeFormat, moneyFormat } from '../../constants';
 import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
 import { Avatar, Drawer, Dropdown, Input, Popconfirm } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import Account from '../../db/models/Account';
 import React from 'react';
 import SubCategory from '../../db/models/SubCategory';
@@ -181,7 +181,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   ];
 
   const deleteTransactions = async () => {
-    await database.write(async () => {
+    await database().write(async () => {
       const selectedTransactions = selectedTransactionIds
         .map(id => transactions.find(t => t.id === id))
       selectedTransactions.forEach(t => t?.markAsDeleted());
@@ -269,10 +269,10 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   );
 };
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query(),
-  subCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(),
-  transactions: database.collections.get<Transaction>(TableName.Transactions).query(Q.sortBy('transaction_at'))
+const enhance = withObservables([], () => ({
+  accounts: database().collections.get<Account>(TableName.Accounts).query(),
+  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(),
+  transactions: database().collections.get<Transaction>(TableName.Transactions).query(Q.sortBy('transaction_at'))
 }));
-const EnhancedTransactionsPage = withDatabase(enhance(TransactionsPage));
+const EnhancedTransactionsPage = enhance(TransactionsPage);
 export default EnhancedTransactionsPage;

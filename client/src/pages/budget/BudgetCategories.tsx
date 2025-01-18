@@ -1,6 +1,5 @@
 import { BudgetTab } from './BudgetPage';
-import { Database } from '@nozbe/watermelondb';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import BudgetChart from './BudgetChart';
 import BudgetProgress from './BudgetProgress';
 import Category from '../../db/models/Category';
@@ -13,6 +12,7 @@ import { moneyFormat } from '../../constants';
 import { useTranslation } from 'react-i18next';
 import { CategoryData, getBudgetData } from '../../utils/DbUtils';
 import { Typography } from 'antd';
+import database from '../../db/database';
 
 interface BudgetCategoriesProps {
   tab: BudgetTab
@@ -74,10 +74,10 @@ const BudgetCategories: React.FC<BudgetCategoriesProps> = ({ tab, categories, su
   );
 };
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  categories: database.collections.get<Category>(TableName.Categories).query(),
-  subCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(),
-  transactions: database.collections.get<Tranasction>(TableName.Transactions).query(),
+const enhance = withObservables([], () => ({
+  categories: database().collections.get<Category>(TableName.Categories).query(),
+  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(),
+  transactions: database().collections.get<Tranasction>(TableName.Transactions).query(),
 }));
-const EnhancedBudgetCategories = withDatabase(enhance(BudgetCategories));
+const EnhancedBudgetCategories = enhance(BudgetCategories);
 export default EnhancedBudgetCategories;

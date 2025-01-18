@@ -1,6 +1,5 @@
 import { Collapse, CollapseProps, DatePicker, List, Typography } from 'antd';
-import { Database } from '@nozbe/watermelondb';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import Category from '../../../db/models/Category';
 import Money from '../../../common/Money';
 import React from 'react';
@@ -9,6 +8,7 @@ import TableName from '../../../db/TableName';
 import Tranasction from '../../../db/models/Transaction';
 import moment from 'moment';
 import dayjs from 'dayjs';
+import database from '../../../db/database';
 
 interface MonthlyCategoryCostProps {
   transactions: Array<Tranasction>;
@@ -94,10 +94,10 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
     </div>
   );
 };
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  transactions: database.collections.get<Tranasction>(TableName.Transactions).query(),
-  subCategories: database.collections.get<SubCategory>(TableName.SubCategories).query(),
-  categories: database.collections.get<Category>(TableName.Categories).query(),
+const enhance = withObservables([], () => ({
+  transactions: database().collections.get<Tranasction>(TableName.Transactions).query(),
+  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(),
+  categories: database().collections.get<Category>(TableName.Categories).query(),
 }));
-const EnhancedMonthlyCategoryCost = withDatabase(enhance(MonthlyCategoryCost));
+const EnhancedMonthlyCategoryCost = enhance(MonthlyCategoryCost);
 export default EnhancedMonthlyCategoryCost;

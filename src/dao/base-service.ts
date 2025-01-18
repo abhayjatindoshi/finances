@@ -5,6 +5,7 @@ export interface Model {
     id: string
     created_at: number
     updated_at: number
+    tenant_id: string
 }
 
 export interface Changes<M extends Model> {
@@ -22,10 +23,10 @@ export default abstract class BaseService<M extends Model> {
     abstract sanitize(entity: M): M;
     abstract validate(entity: M): M;
 
-    public async pull(lastPulledAt: number): Promise<Changes<M>> {
-        const created = db.fetchAny(templateString(['select * from ' + this.entityName + ' where created_at >= ', '']), lastPulledAt);
-        const updated = db.fetchAny(templateString(['select * from ' + this.entityName + ' where created_at < ', ' and updated_at >= ', '']), lastPulledAt, lastPulledAt);
-        const deleted = db.fetchAny`select * from deleted_entities where convert(varchar,entity_type) = ${this.entityName} and deleted_at >= ${lastPulledAt}`;
+    public async pull(tenantId: string, lastPulledAt: number): Promise<Changes<M>> {
+        const created = db.fetchAny(templateString(['select * from ' + this.entityName + ' where tenant_id = ', ' and created_at >= ', '']), tenantId, lastPulledAt);
+        const updated = db.fetchAny(templateString(['select * from ' + this.entityName + ' where tenant_id = ', ' and created_at < ', ' and updated_at >= ', '']), tenantId, lastPulledAt, lastPulledAt);
+        const deleted = db.fetchAny`select * from deleted_entities where tenant_id = ${tenantId} and convert(varchar,entity_type) = ${this.entityName} and deleted_at >= ${lastPulledAt}`;
 
         return Promise.all([created, updated, deleted])
             .then(([created, updated, deleted]) => (
@@ -34,12 +35,12 @@ export default abstract class BaseService<M extends Model> {
     }
 
 
-    public async push(lastPulledAt: number, changes: Changes<M>): Promise<boolean> {
+    public async push(tenantId: string, lastPulledAt: number, changes: Changes<M>): Promise<boolean> {
         return await db.runInTransaction(async (): Promise<boolean> => {
             return await Promise.all([
-                ...this.chunckAndExecute(100, changes.created, this.create),
-                ...this.chunckAndExecute(100, changes.updated, this.update),
-                ...this.chunckAndExecute(100, changes.deleted, this.delete),
+                ...this.chunckAndExecute(100, changes.created, items => this.create(tenantId, items)),
+                ...this.chunckAndExecute(100, changes.updated, items => this.update(tenantId, items)),
+                ...this.chunckAndExecute(100, changes.deleted, items => this.delete(tenantId, items)),
             ]).then(_ => true);
         })
     }
@@ -52,9 +53,10 @@ export default abstract class BaseService<M extends Model> {
         return promises;
     }
 
-    public async create(entities: Array<M> | undefined) {
+    public async create(tenantId: string, entities: Array<M> | undefined) {
         if (!entities || entities.length == 0) return;
         let sanitized = entities.map(this.sanitize).map(this.validate);
+        sanitized.forEach(e => e.tenant_id = tenantId);
 
         let keys = Object.keys(sanitized[0]);
         let vars = sanitized.map(entity => keys.map(key => (entity as any)[key]));
@@ -71,9 +73,10 @@ export default abstract class BaseService<M extends Model> {
     }
 
 
-    public async update(entities: Array<M> | undefined) {
+    public async update(tenantId: string, entities: Array<M> | undefined) {
         if (!entities || entities.length == 0) return;
         let sanitized = entities.map(this.sanitize).map(this.validate);
+        sanitized.forEach(e => e.tenant_id = tenantId);
 
         let keys = Object.keys(sanitized[0]);
         let vars = sanitized.map(entity => [...keys.map(key => (entity as any)[key]), entity.id]).flat();
@@ -87,18 +90,19 @@ export default abstract class BaseService<M extends Model> {
         }
     }
 
-    public async delete(ids: Array<string> | undefined) {
+    public async delete(tenantId: string, ids: Array<string> | undefined) {
         if (!ids || ids.length == 0) return;
         let query = [
-            `insert into deleted_entities (entity_type, entity_id, deleted_at) values (`,
+            `insert into deleted_entities (tenant_id, entity_type, entity_id, deleted_at) values (`,
             Array(ids.length - 1).fill('), ('),
             `); delete from ${this.entityName} where id in (`,
-            ');'
+            ') and tenant_id = ',
+            ';'
         ].flat();
-        let vars = ids.map(id => [this.entityName, id, Date.now()]);
+        let vars = ids.map(id => [tenantId, this.entityName, id, Date.now()]);
         vars.push(ids);
 
-        let rows = await db.execute(templateString(query), ...vars)
+        let rows = await db.execute(templateString(query), ...vars, tenantId)
         if (rows < ids.length) {
             throw new Error('Failed to delete row.');
         }

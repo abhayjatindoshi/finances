@@ -14,6 +14,7 @@ export default new class SubCategoryService extends BaseService<SubCategory> {
             category_id: entity.category_id,
             created_at: entity.created_at,
             updated_at: entity.updated_at,
+            tenant_id: entity.tenant_id,
         }
     }
     validate(entity: SubCategory): SubCategory {

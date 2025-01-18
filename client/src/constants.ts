@@ -25,3 +25,4 @@ export const moneyFormat = Intl.NumberFormat('en-IN', { style: 'currency', curre
 export const loginUrl = '/api/v1/auth/login';
 export const logoutUrl = '/api/v1/auth/logout';
 export const profileApiUrl = '/api/v1/auth/me';
+export const tenantsApiUrl = '/api/v1/tenants';

@@ -18,6 +18,7 @@ export default new class CategoryService extends BaseService<Category> {
             type: entity.type,
             created_at: entity.created_at,
             updated_at: entity.updated_at,
+            tenant_id: entity.tenant_id,
         }
     }
     validate(entity: Category): Category {

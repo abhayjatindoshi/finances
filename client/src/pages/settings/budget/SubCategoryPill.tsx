@@ -23,7 +23,7 @@ const SubCategoryPill: React.FC<SubCategoryPillProps> = ({ categoryId, subCatego
 
   useEffect(() => {
     if (!subCategory) return;
-    database.collections.get<Tranasction>(TableName.Transactions)
+    database().collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('sub_category_id', subCategory.id)).fetchCount()
       .then(setTotalDependencyCount);
 
@@ -31,15 +31,15 @@ const SubCategoryPill: React.FC<SubCategoryPillProps> = ({ categoryId, subCatego
 
   async function save() {
     if (subCategory) {
-      await database.write(async () => {
+      await database().write(async () => {
         await subCategory?.update(s => {
           s.name = name;
         })
       });
     } else {
-      await database.write(async () => {
-        const category = await database.collections.get<Category>(TableName.Categories).find(categoryId);
-        const subCategory = await database.collections.get<SubCategory>(TableName.SubCategories);
+      await database().write(async () => {
+        const category = await database().collections.get<Category>(TableName.Categories).find(categoryId);
+        const subCategory = await database().collections.get<SubCategory>(TableName.SubCategories);
         await subCategory.create(s => {
           s.name = name;
           s.category.set(category);
@@ -51,7 +51,7 @@ const SubCategoryPill: React.FC<SubCategoryPillProps> = ({ categoryId, subCatego
 
   async function deleteSubCategory() {
     if (totalDependencyCount > 0) return;
-    await database.write(async () => {
+    await database().write(async () => {
       await subCategory?.markAsDeleted();
     });
   }

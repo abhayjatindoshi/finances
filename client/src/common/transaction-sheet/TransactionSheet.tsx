@@ -146,9 +146,9 @@ const TransactionSheet: React.FC<TransactionSheetProps> = ({ account, transactio
 
 const enhance = withObservables(['account'], ({ account }: { account: Account }) => ({
   account,
-  accounts: database.collections.get<Account>('accounts').query(Q.sortBy('name', 'desc')),
-  transactions: database.collections.get<Transaction>('transactions').query(Q.where('account_id', account.id), Q.sortBy('transaction_at', 'desc')),
-  subCategories: database.collections.get<SubCategory>('sub_categories').query(Q.sortBy('name'))
+  accounts: database().collections.get<Account>('accounts').query(Q.sortBy('name', 'desc')),
+  transactions: database().collections.get<Transaction>('transactions').query(Q.where('account_id', account.id), Q.sortBy('transaction_at', 'desc')),
+  subCategories: database().collections.get<SubCategory>('sub_categories').query(Q.sortBy('name'))
 }));
 const EnhancedTransactionSheet = enhance(TransactionSheet);
 export default EnhancedTransactionSheet;

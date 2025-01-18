@@ -1,9 +1,9 @@
 import { CloseCircleOutlined, DeleteOutlined, EditOutlined, LeftOutlined, SaveOutlined } from '@ant-design/icons';
 import { Input, Popconfirm } from 'antd';
-import { Q, Database } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { withDatabase, withObservables } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import database from '../../../db/database';
 import IconButton from '../../../common/IconButton';
 import React, { useEffect, useState } from 'react';
@@ -55,7 +55,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
       initialBalance: account.initialBalance,
     })
 
-    database.collections.get<Tranasction>(TableName.Transactions)
+    database().collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('account_id', account.id))
       .fetchCount().then(setTotalDependencyCount);
 
@@ -66,7 +66,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
 
   function deleteAccount() {
     if (totalDependencyCount > 0) return;
-    database.write(async () => {
+    database().write(async () => {
       const dbAccount = accounts.find(account => account.id === accountId);
       if (!dbAccount) return;
       await dbAccount.markAsDeleted();
@@ -82,15 +82,15 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   async function saveAccount() {
     setSaving(true);
     if (accountId === 'new') {
-      await database.write(async () => {
-        const created = await database.collections.get<Account>(TableName.Accounts)
+      await database().write(async () => {
+        const created = await database().collections.get<Account>(TableName.Accounts)
           .create(a => setToAccount(account, a));
         navigate(`/settings/accounts/${created.id}`);
       });
     } else {
       const dbAccount = accounts.find(account => account.id === accountId);
       if (!dbAccount) return;
-      await database.write(async () => {
+      await database().write(async () => {
         await dbAccount.update(a => setToAccount(account, a));
       });
     }
@@ -155,8 +155,8 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   );
 };
 
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
+const enhance = withObservables([], () => ({
+  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
 }));
-const EnhancedAccountSettings = withDatabase(enhance(AccountSettings));
+const EnhancedAccountSettings = enhance(AccountSettings);
 export default EnhancedAccountSettings;

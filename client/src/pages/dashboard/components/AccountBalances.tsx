@@ -1,8 +1,8 @@
-import { Database, Q } from '@nozbe/watermelondb';
+import { Q } from '@nozbe/watermelondb';
 import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
 import { Card, Statistic, Tooltip } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { withObservables, withDatabase } from '@nozbe/watermelondb/react';
+import { withObservables } from '@nozbe/watermelondb/react';
 import Account from '../../../db/models/Account';
 import React, { useEffect } from 'react';
 import TableName from '../../../db/TableName';
@@ -11,6 +11,7 @@ import { antColors, dateTimeFormat, moneyFormat } from '../../../constants';
 import { Link } from 'react-router-dom';
 import { pickRandomByHash } from '../../../utils/Common';
 import { SwapOutlined } from '@ant-design/icons';
+import database from '../../../db/database';
 
 interface AccountBalancesProps {
   accounts: Array<Account>;
@@ -60,8 +61,8 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
     </div>
   );
 };
-const enhance = withObservables([], ({ database }: { database: Database }) => ({
-  accounts: database.collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
+const enhance = withObservables([], () => ({
+  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
 }));
-const EnhancedAccountBalances = withDatabase(enhance(AccountBalances));
+const EnhancedAccountBalances = enhance(AccountBalances);
 export default EnhancedAccountBalances;
