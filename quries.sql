@@ -3,14 +3,30 @@ drop table if exists transactions;
 drop table if exists sub_categories;
 drop table if exists categories;
 drop table if exists accounts;
+drop table if exists tenant_users;
 drop table if exists users;
+drop table if exists tenants;
+
+create table tenants
+(
+    id VARCHAR(25) not null primary key,
+    name text not null,
+    created_at bigint not null,
+    updated_at bigint not null
+)
+
+create table tenant_users
+(
+    tenant_id VARCHAR(25) not null FOREIGN KEY REFERENCES tenants(id),
+    user_id VARCHAR(25) not null FOREIGN KEY REFERENCES users(id)
+)
 
 create table users
 (
     id VARCHAR(25) not null primary key,
-    user_id VARCHAR(25) not null,
-    name text not null,
-    email text not null,
+    user_id VARCHAR(25),
+    name text,
+    email VARCHAR(512) not null,
     picture text
 )
 

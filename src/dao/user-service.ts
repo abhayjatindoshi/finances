@@ -5,6 +5,7 @@ import { cryptoRandomId } from "../server-utils";
 
 export interface User {
     id: string,
+    user_id: string,
     name: string,
     email: string,
     picture?: string
@@ -24,32 +25,48 @@ export default new class UserService {
         }
     }
 
-    public async getUser(userId: string): Promise<User | undefined> {
-        return await db.fetchOne`select * from users where user_id = ${userId}`
+    public async getUser(emailId: string): Promise<User | undefined> {
+        return await db.fetchOne`select * from users where email = ${emailId}`
     }
 
-    public async createUserIfNotExists(profile: Profile): Promise<User> {
-        let user = await this.getUser(profile.id);
-        if (user) return user;
-        if (!profile.emails || profile.emails.length <= 0) {
-            throw new Error('User not allowed without an email id.');
-        }
-        if (!profile.photos || profile.photos.length <= 0) {
-            profile.photos = [{ value: '' }]
+    public async createUserByEmailIfNotExists(email: string): Promise<User> {
+        let user = await this.getUser(email);
+        if (user) {
+            return user;
         }
 
-        const rows = await db.execute`insert into users values (
-            ${cryptoRandomId()},    
-            ${profile.id}, ${profile.displayName},
-            ${profile.emails[0].value},
-            ${profile.photos[0].value}
-        )`
+        const rows = await db.execute`insert into users (id, email) values (${cryptoRandomId()},${email})`
 
         if (rows != 1) {
             throw new Error('Failed to insert row.');
         }
 
-        user = await this.getUser(profile.id);
+        user = await this.getUser(email);
         return user!;
+    }
+
+    public async createUserIfNotExists(profile: Profile): Promise<User> {
+        if (!profile.photos || profile.photos.length <= 0) {
+            profile.photos = [{ value: '' }]
+        }
+
+        if (!profile.emails || profile.emails.length <= 0) {
+            throw new Error('User not allowed without an email id.');
+        }
+
+        const emailId = profile.emails[0].value;
+        let user = await this.createUserByEmailIfNotExists(emailId);
+        if (user.user_id) return user;
+        
+        const rows = await db.execute`update users set 
+            user_id = ${profile.id}, 
+            name = ${profile.displayName}, 
+            picture = ${profile.photos[0].value} 
+            where email = ${emailId}`
+        if (rows != 1) {
+            throw new Error('Failed to update row.');
+        }
+
+        return await this.getUser(emailId) as User;
     }
 }();
