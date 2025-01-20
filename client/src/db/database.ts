@@ -6,13 +6,13 @@ import Account from "./models/Account";
 import Category from "./models/Category";
 import SubCategory from "./models/SubCategory";
 import Tranasction from "./models/Transaction";
-import { Tenant } from "../pages/AppLoaderPage";
-import { tenantsApiUrl } from "../constants";
+import tenantService from "../services/tenant-service";
+import { Tenant } from "../services/entities/Tenant";
 
 let currentDatabase: Database | undefined;
 
 export async function loadDatabase(): Promise<void> {
-  const tenants = await fetch(tenantsApiUrl).then(res => res.json());
+  const tenants = await tenantService.fetchAllTenants();
   if (tenants.length === 0) {
     window.location.href = '/error?error=app.noTenants';
     return;

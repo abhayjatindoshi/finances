@@ -13,6 +13,7 @@ import RedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountP
 import SettingsPage from "./pages/settings/SettingsPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
 import RedirectToAllTransactionsPage from "./pages/transactions/RedirectToAllTransactionsPage";
+import TenantsPage from "./pages/TenantsPage";
 
 const router = createBrowserRouter([
   {
@@ -74,6 +75,10 @@ const router = createBrowserRouter([
 
     ],
     errorElement: <ErrorPage />
-  }
+  },
+  {
+    path: 'tenants',
+    element: <TenantsPage />
+  },
 ]);
 export default router;

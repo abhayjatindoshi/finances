@@ -5,21 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect } from 'react';
 import { loadDatabase } from '../db/database';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  picture: string;
-}
-
-export interface Tenant {
-  id: string;
-  name: string;
-  created_at: number;
-  updated_at: number;
-  users: User[];
-}
+import { User } from '../services/entities/User';
 
 interface AppLoaderPageProps {
   onLoadingComplete?: () => void;

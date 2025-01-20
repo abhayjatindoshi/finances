@@ -1,11 +1,11 @@
 import { Dropdown, Avatar, MenuProps, Badge } from "antd";
 import React, { useEffect, useState } from "react";
-import { User } from "../pages/AppLoaderPage";
 import { useTranslation } from "react-i18next";
 import { logoutUrl } from "../constants";
 import { DownloadOutlined, LogoutOutlined, SyncOutlined } from "@ant-design/icons";
 import { BeforeInstallPromptEvent } from "../utils/BeforeInstallPromptEvent";
 import { syncNow } from "../db/sync";
+import { User } from "../services/entities/User";
 
 interface ProfileProps {
   user: User

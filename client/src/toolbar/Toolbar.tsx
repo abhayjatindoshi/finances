@@ -1,11 +1,11 @@
 import { HomeOutlined, PieChartOutlined, SettingOutlined, SwapOutlined } from "@ant-design/icons";
 import { subscribeTo } from "../utils/GlobalVariable";
 import { unsubscribeAll } from "../utils/ComponentUtils";
-import { User } from "../pages/AppLoaderPage";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import MenuItem from "./MenuItem";
 import Profile from "./Profile";
+import { User } from "../services/entities/User";
 
 export default function Toolbar() {
   const { t } = useTranslation();
