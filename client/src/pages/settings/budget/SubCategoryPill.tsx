@@ -8,6 +8,7 @@ import TableName from '../../../db/TableName';
 import Category from '../../../db/models/Category';
 import Tranasction from '../../../db/models/Transaction';
 import { Q } from '@nozbe/watermelondb';
+import { useParams } from 'react-router-dom';
 
 interface SubCategoryPillProps {
   categoryId: string;
@@ -17,29 +18,32 @@ interface SubCategoryPillProps {
 const SubCategoryPill: React.FC<SubCategoryPillProps> = ({ categoryId, subCategory }) => {
 
   const { t } = useTranslation();
+  const { tenantId } = useParams();
   const [name, setName] = React.useState(subCategory?.name ?? '');
   const [edit, setEdit] = React.useState(false);
   const [totalDependencyCount, setTotalDependencyCount] = React.useState<number>(0);
 
   useEffect(() => {
+    if (!tenantId) return;
     if (!subCategory) return;
-    database().collections.get<Tranasction>(TableName.Transactions)
+    database(tenantId).collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('sub_category_id', subCategory.id)).fetchCount()
       .then(setTotalDependencyCount);
 
-  }, [subCategory]);
+  }, [subCategory, tenantId]);
 
   async function save() {
+    if (!tenantId) return;
     if (subCategory) {
-      await database().write(async () => {
+      await database(tenantId).write(async () => {
         await subCategory?.update(s => {
           s.name = name;
         })
       });
     } else {
-      await database().write(async () => {
-        const category = await database().collections.get<Category>(TableName.Categories).find(categoryId);
-        const subCategory = await database().collections.get<SubCategory>(TableName.SubCategories);
+      await database(tenantId).write(async () => {
+        const category = await database(tenantId).collections.get<Category>(TableName.Categories).find(categoryId);
+        const subCategory = await database(tenantId).collections.get<SubCategory>(TableName.SubCategories);
         await subCategory.create(s => {
           s.name = name;
           s.category.set(category);
@@ -50,8 +54,9 @@ const SubCategoryPill: React.FC<SubCategoryPillProps> = ({ categoryId, subCatego
   }
 
   async function deleteSubCategory() {
+    if (!tenantId) return;
     if (totalDependencyCount > 0) return;
-    await database().write(async () => {
+    await database(tenantId).write(async () => {
       await subCategory?.markAsDeleted();
     });
   }

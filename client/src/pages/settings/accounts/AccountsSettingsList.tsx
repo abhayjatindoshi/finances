@@ -2,7 +2,7 @@ import { Q } from '@nozbe/watermelondb';
 import { withObservables } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
 import { Avatar, List } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
@@ -25,19 +25,21 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { tenantId } = useParams();
   const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
   const selectedAccountId = location.pathname.split('/').pop();
   const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
 
   useEffect(() => {
     const fetchBalances = async () => {
-      const balances = await getBalanceMap();
+      if (!tenantId) return;
+      const balances = await getBalanceMap(tenantId);
       setBalanceMap(balances);
     };
     fetchBalances();
     const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
     return unsubscribeAll(screenSubscription);
-  }, [accounts]);
+  }, [accounts, tenantId]);
 
   return (
     <div className='flex flex-col app-content-height'>
@@ -71,8 +73,11 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   );
 };
 
-const enhance = withObservables([], () => ({
-  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettingsList = enhance(AccountsSettingsList);
+const EnhancedCategorySettingsList = () => {
+  const { tenantId } = useParams();
+  return enhance(AccountsSettingsList)(tenantId);
+};
 export default EnhancedCategorySettingsList;

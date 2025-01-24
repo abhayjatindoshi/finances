@@ -1,6 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
 import AccountSettings from "./pages/settings/accounts/AccountSettings";
-import AccountsPage from "./pages/accounts/AccountsPage";
 import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
 import App from "./App";
 import BudgetPage from "./pages/budget/BudgetPage";
@@ -8,77 +7,74 @@ import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
 import CategorySettings from "./pages/settings/budget/CategorySettings";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ErrorPage from "./pages/ErrorPage";
-import HomePage from "./pages/HomePage";
-import RedirectToFirstAccountPage from "./pages/accounts/RedirectToFirstAccountPage";
+import RedirectToPage from "./pages/RedirectToPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import TransactionsPage from "./pages/transactions/TransactionsPage";
-import RedirectToAllTransactionsPage from "./pages/transactions/RedirectToAllTransactionsPage";
 import TenantsPage from "./pages/TenantsPage";
+import TransactionsPage from "./pages/transactions/TransactionsPage";
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <RedirectToPage to='/tenants' />,
     children: [
       {
-        path: '/',
-        element: <HomePage />
+        path: 'tenants',
+        element: <TenantsPage />
       },
       {
-        path: 'dashboard',
-        element: <DashboardPage />,
-      }, {
-        path: 'accounts',
-        element: <RedirectToFirstAccountPage />,
-      }, {
-        path: 'accounts/:id',
-        element: <AccountsPage />,
-      }, {
-        path: 'budget',
-        element: <BudgetPage />,
-      }, {
-        path: 'budget/:tab',
-        element: <BudgetPage />,
-      }, {
-        path: 'transactions',
-        element: <RedirectToAllTransactionsPage />
-      }, {
-        path: 'transactions/:accountId',
-        element: <TransactionsPage />
-      }, {
-        path: 'settings',
-        element: <SettingsPage />,
+        path: 'tenants/:tenantId',
+        element: <App />,
         children: [
           {
-            path: 'accounts',
-            element: <AccountsSettingsPage />,
+            path: '/',
+            element: <RedirectToPage to="dashboard" />
+          },
+          {
+            path: 'dashboard',
+            element: <DashboardPage />,
+          }, {
+            path: 'transactions',
+            element: <RedirectToPage to='transactions/all' />,
+          }, {
+            path: 'transactions/:accountId',
+            element: <TransactionsPage />
+          }, {
+            path: 'budget',
+            element: <BudgetPage />,
+          }, {
+            path: 'budget/:tab',
+            element: <BudgetPage />,
+          }, {
+            path: 'settings',
+            element: <SettingsPage />,
             children: [
               {
-                path: ':accountId',
-                element: <AccountSettings />,
+                path: 'accounts',
+                element: <AccountsSettingsPage />,
+                children: [
+                  {
+                    path: ':accountId',
+                    element: <AccountSettings />,
+                  }
+                ]
+              }, {
+                path: 'budget',
+                element: <BudgetSettingsPage />,
+                children: [
+                  {
+                    path: ':categoryId',
+                    element: <CategorySettings />
+                  }
+                ]
               }
             ]
           }, {
-            path: 'budget',
-            element: <BudgetSettingsPage />,
-            children: [
-              {
-                path: ':categoryId',
-                element: <CategorySettings />
-              }
-            ]
+            element: <ErrorPage />
           }
         ]
-      }, {
-        element: <ErrorPage />
-      }
-
+      },
     ],
     errorElement: <ErrorPage />
-  },
-  {
-    path: 'tenants',
-    element: <TenantsPage />
-  },
+  }
 ]);
 export default router;

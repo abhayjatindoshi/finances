@@ -10,6 +10,7 @@ import database from '../../../db/database';
 import Tranasction from '../../../db/models/Transaction';
 import TableName from '../../../db/TableName';
 import Time from '../../../common/Time';
+import { useParams } from 'react-router-dom';
 
 interface ImportPageProps {
   account: Account;
@@ -32,6 +33,7 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
   const { Column } = Table;
   const { Dragger } = Upload;
   const { Text } = Typography;
+  const { tenantId } = useParams();
   const [status, setStatus] = React.useState<ImportStatus>(ImportStatus.Waiting);
   const [worksheet, setWorksheet] = React.useState<Array<string[][]>>([]);
   const [importFormat, setImportFormat] = React.useState<ImportFormat | undefined>();
@@ -61,9 +63,10 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
   }
 
   function importData() {
+    if (!tenantId) return;
     if (selectedTransactions.length === 0) return;
-    database().write(async () => {
-      const transactionCollection = database().collections.get<Tranasction>(TableName.Transactions);
+    database(tenantId).write(async () => {
+      const transactionCollection = database(tenantId).collections.get<Tranasction>(TableName.Transactions);
       const promises = selectedTransactions.map(transaction => transactionCollection.create(t => {
         t.account.set(account);
         t.transactionAt = transaction.transactionAt;

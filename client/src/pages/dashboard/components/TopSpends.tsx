@@ -2,19 +2,22 @@ import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect } from 'react';
 import { Progress } from 'antd';
+import { useParams } from 'react-router-dom';
 
 const TopSpends: React.FC = () => {
 
+  const { tenantId } = useParams();
   const { t } = useTranslation();
   const [data, setData] = React.useState<Array<CategoryData>>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getBudgetData();
+      if (!tenantId) return;
+      const data = await getBudgetData(tenantId);
       setData(data);
     };
     fetchData();
-  }, [setData]);
+  }, [setData, tenantId]);
 
   function DashbordProgess({ percentage, name }: { percentage: number, name: string }) {
     const textColor = percentage > 100 ? 'var(--ant-red)' : 'var(--ant-color-text)';

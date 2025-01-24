@@ -9,19 +9,22 @@ import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
 import { AgCharts } from "ag-charts-react";
 import { AgChartOptions } from 'ag-charts-community';
 import database from '../../../db/database';
+import { useParams } from 'react-router-dom';
 
 
 const TransactionsPie: React.FC = () => {
 
+  const { tenantId } = useParams();
   const [data, setData] = React.useState<Array<CategoryData>>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getBudgetData();
+      if (!tenantId) return;
+      const data = await getBudgetData(tenantId);
       setData(data.sort((a, b) => a.total - b.total));
     };
     fetchData();
-  }, [setData]);
+  }, [setData, tenantId]);
 
   const chartOptions: AgChartOptions = {
     theme: 'ag-default-dark',
@@ -47,10 +50,13 @@ const TransactionsPie: React.FC = () => {
     </div>
   );
 };
-const enhance = withObservables([], () => ({
-  categories: database().collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
-  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
-  transactions: database().collections.get<Transaction>(TableName.Transactions).query(),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  categories: database(tenantId).collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  subCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
+  transactions: database(tenantId).collections.get<Transaction>(TableName.Transactions).query(),
 }));
-const EnhancedTransactionsPie = enhance(TransactionsPie);
+const EnhancedTransactionsPie = () => {
+  const { tenantId } = useParams();
+  return enhance(TransactionsPie)(tenantId);
+};
 export default EnhancedTransactionsPie;

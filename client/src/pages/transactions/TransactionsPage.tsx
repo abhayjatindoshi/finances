@@ -1,25 +1,25 @@
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef, AllCommunityModule, ModuleRegistry, colorSchemeDark, themeAlpine, CellEditRequestEvent } from 'ag-grid-community';
-import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
-import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
-import { Q } from '@nozbe/watermelondb';
 import { antColors, dateTimeFormat, moneyFormat } from '../../constants';
-import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
+import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
 import { Avatar, Drawer, Dropdown, Input, Popconfirm } from 'antd';
+import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
+import { ColDef, AllCommunityModule, ModuleRegistry, colorSchemeDark, themeAlpine, CellEditRequestEvent } from 'ag-grid-community';
+import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
+import { pickRandomByHash } from '../../utils/Common';
+import { Q } from '@nozbe/watermelondb';
+import { useForceUpdate } from '../../utils/ComponentUtils';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { withObservables } from '@nozbe/watermelondb/react';
 import Account from '../../db/models/Account';
+import database from '../../db/database';
+import IconButton from '../../common/IconButton';
+import ImportPage from './import/ImportPage';
+import Money from '../../common/Money';
 import React from 'react';
 import SubCategory from '../../db/models/SubCategory';
 import TableName from '../../db/TableName';
 import Transaction from '../../db/models/Transaction';
-import Money from '../../common/Money';
-import IconButton from '../../common/IconButton';
-import ImportPage from '../accounts/import/ImportPage';
-import { useForceUpdate } from '../../utils/ComponentUtils';
-import database from '../../db/database';
-import { pickRandomByHash } from '../../utils/Common';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -34,7 +34,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
 
   const all = 'all';
   const { t } = useTranslation();
-  const { accountId } = useParams();
+  const { accountId, tenantId } = useParams();
   const navigate = useNavigate();
   const forceUpdate = useForceUpdate();
   const [importDrawerOpen, setImportDrawerOpen] = React.useState<boolean>(false);
@@ -181,7 +181,8 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   ];
 
   const deleteTransactions = async () => {
-    await database().write(async () => {
+    if (!tenantId) return;
+    await database(tenantId).write(async () => {
       const selectedTransactions = selectedTransactionIds
         .map(id => transactions.find(t => t.id === id))
       selectedTransactions.forEach(t => t?.markAsDeleted());
@@ -189,6 +190,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   }
 
   const handleChanges = async (event: CellEditRequestEvent<TransactionRow>) => {
+    if (!tenantId) return;
     const transactionRow = event.data;
     const colDef = event.colDef;
     const updatedValue = event.newValue;
@@ -203,7 +205,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
 
     if (!colDef.field) return;
 
-    await updateTransactionRow(transactionRow, colDef.field, updatedValue);
+    await updateTransactionRow(tenantId, transactionRow, colDef.field, updatedValue);
     forceUpdate();
   }
 
@@ -269,10 +271,13 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   );
 };
 
-const enhance = withObservables([], () => ({
-  accounts: database().collections.get<Account>(TableName.Accounts).query(),
-  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(),
-  transactions: database().collections.get<Transaction>(TableName.Transactions).query(Q.sortBy('transaction_at'))
+const enhance = withObservables(['tenantId'], ({tenantId}) => ({
+  accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(),
+  subCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(),
+  transactions: database(tenantId).collections.get<Transaction>(TableName.Transactions).query(Q.sortBy('transaction_at'))
 }));
-const EnhancedTransactionsPage = enhance(TransactionsPage);
+const EnhancedTransactionsPage = () => {
+  const { tenantId } = useParams();
+  return enhance(TransactionsPage)(tenantId);
+}
 export default EnhancedTransactionsPage;

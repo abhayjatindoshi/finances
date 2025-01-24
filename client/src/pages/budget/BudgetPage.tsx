@@ -12,7 +12,7 @@ const BudgetPage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { tab } = useParams();
-  const [selectedTab, setSelectedTab] = React.useState<BudgetTab | undefined>();
+  const [selectedTab, setSelectedTab] = React.useState<BudgetTab>('monthly');
 
   React.useEffect(() => {
     if (tab === 'monthly' || tab === 'yearly') {

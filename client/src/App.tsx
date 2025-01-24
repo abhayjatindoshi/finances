@@ -12,7 +12,6 @@ import { syncLoop } from './db/sync';
 const { Header, Content } = Layout;
 
 function App() {
-
   const isScreenLandscape = createGlobalVariable<boolean>('isScreenLandscape');
   const [loading, setLoading] = useState<boolean>(true);
   const [syncing, setSyncing] = useState<boolean>(false);

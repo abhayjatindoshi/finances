@@ -12,9 +12,9 @@ export interface AccountBalance {
   transactionCount: number;
 }
 
-export async function getBalanceMap(): Promise<Map<Account, AccountBalance>> {
-  const accounts = await database().collections.get<Account>('accounts').query().fetch();
-  const transactionCollection = database().collections.get<Tranasction>('transactions');
+export async function getBalanceMap(tenantId: string): Promise<Map<Account, AccountBalance>> {
+  const accounts = await database(tenantId).collections.get<Account>('accounts').query().fetch();
+  const transactionCollection = database(tenantId).collections.get<Tranasction>('transactions');
   const result = new Map<Account, AccountBalance>();
 
   for (const account of accounts) {
@@ -46,10 +46,10 @@ export interface CategoryData {
   budgetPercentage: number
 }
 
-export async function getBudgetData(): Promise<Array<CategoryData>> {
-  const categories = await database().collections.get<Category>(TableName.Categories).query().fetch();
-  const subCategories = await database().collections.get<SubCategory>(TableName.SubCategories).query().fetch();
-  const transactions = await database().collections.get<Tranasction>(TableName.Transactions).query().fetch();
+export async function getBudgetData(tenantId: string): Promise<Array<CategoryData>> {
+  const categories = await database(tenantId).collections.get<Category>(TableName.Categories).query().fetch();
+  const subCategories = await database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query().fetch();
+  const transactions = await database(tenantId).collections.get<Tranasction>(TableName.Transactions).query().fetch();
 
   return categories.map(category => {
     const subCategoriesIds = subCategories.filter(subCategory => subCategory.category.id === category.id).map(subCategory => subCategory.id);

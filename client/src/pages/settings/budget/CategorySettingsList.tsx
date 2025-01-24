@@ -3,7 +3,7 @@ import { withObservables } from '@nozbe/watermelondb/react';
 import React, { ReactNode, useEffect } from 'react';
 import Category from '../../../db/models/Category';
 import { Avatar, List } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
@@ -75,8 +75,12 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   );
 };
 
-const enhance = withObservables([], () => ({
-  categories: database().collections.get<Category>('categories').query(Q.sortBy('name')),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  categories: database(tenantId).collections.get<Category>('categories').query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettingsList = enhance(CategorySettingsList);
+const EnhancedCategorySettingsList = () => {
+  const { tenantId } = useParams();
+  return enhance(CategorySettingsList)(tenantId);
+};
+
 export default EnhancedCategorySettingsList;

@@ -33,7 +33,7 @@ const defaultCategory: RawCategory = { id: '', name: '', limit: 0, limitType: 'm
 const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubCategories }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { categoryId } = useParams();
+  const { categoryId, tenantId } = useParams();
   const [category, setCategory] = useState<RawCategory>(defaultCategory);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [saving, setSaving] = useState(false);
@@ -66,18 +66,20 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
     const subCategories = allSubCategories?.filter(subCategory => subCategory.category.id === categoryId);
     setSubCategories(subCategories);
 
-    database().collections.get<Tranasction>(TableName.Transactions)
+    if (!tenantId) return;
+    database(tenantId).collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('sub_category_id', Q.oneOf(subCategories.map(s => s.id))))
       .fetchCount().then(setTotalDependencyCount);
 
     const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
     return unsubscribeAll(screenSubscription);
 
-  }, [categoryId, categories, allSubCategories, navigate]);
+  }, [categoryId, categories, allSubCategories, navigate, tenantId]);
 
   function deleteCategory() {
+    if (!tenantId) return;
     if (totalDependencyCount > 0) return;
-    database().write(async () => {
+    database(tenantId).write(async () => {
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
       await dbCategory.markAsDeleted();
@@ -93,17 +95,18 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   }
 
   async function saveCategory() {
+    if (!tenantId) return;
     setSaving(true);
     if (categoryId === 'new') {
-      await database().write(async () => {
-        const created = await database().collections.get<Category>(TableName.Categories)
+      await database(tenantId).write(async () => {
+        const created = await database(tenantId).collections.get<Category>(TableName.Categories)
           .create(c => setToCategory(category, c));
         navigate(`/settings/budget/${created.id}`);
       });
     } else {
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
-      await database().write(async () => {
+      await database(tenantId).write(async () => {
         await dbCategory.update(c => setToCategory(category, c));
       });
     }
@@ -190,9 +193,12 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   );
 };
 
-const enhance = withObservables([], () => ({
-  categories: database().collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
-  allSubCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  categories: database(tenantId).collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  allSubCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettings = enhance(CategorySettings);
+const EnhancedCategorySettings = () => {
+  const { tenantId } = useParams();
+  return enhance(CategorySettings)(tenantId);
+};
 export default EnhancedCategorySettings;

@@ -9,6 +9,7 @@ import Tranasction from '../../../db/models/Transaction';
 import moment from 'moment';
 import dayjs from 'dayjs';
 import database from '../../../db/database';
+import { useParams } from 'react-router-dom';
 
 interface MonthlyCategoryCostProps {
   transactions: Array<Tranasction>;
@@ -94,10 +95,13 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
     </div>
   );
 };
-const enhance = withObservables([], () => ({
-  transactions: database().collections.get<Tranasction>(TableName.Transactions).query(),
-  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(),
-  categories: database().collections.get<Category>(TableName.Categories).query(),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  transactions: database(tenantId).collections.get<Tranasction>(TableName.Transactions).query(),
+  subCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(),
+  categories: database(tenantId).collections.get<Category>(TableName.Categories).query(),
 }));
-const EnhancedMonthlyCategoryCost = enhance(MonthlyCategoryCost);
+const EnhancedMonthlyCategoryCost = () => {
+  const { tenantId } = useParams();
+  return enhance(MonthlyCategoryCost)(tenantId);
+};
 export default EnhancedMonthlyCategoryCost;

@@ -4,7 +4,6 @@ import { Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import React, { useEffect } from 'react';
-import { loadDatabase } from '../db/database';
 import { User } from '../services/entities/User';
 
 interface AppLoaderPageProps {
@@ -34,7 +33,7 @@ const AppLoaderPage: React.FC<AppLoaderPageProps> = ({ onLoadingComplete }) => {
         setLoadingTip(t('app.loggingIn'));
         await loadCurrentUser();
         setLoadingTip(t('app.syncing'));
-        await loadDatabase();
+        // await loadDatabase();
         onLoadingComplete?.();
       } catch (error) {
         console.error(error);

@@ -1,39 +1,33 @@
 import { BudgetTab } from './BudgetPage';
-import { withObservables } from '@nozbe/watermelondb/react';
+import { CategoryData, getBudgetData } from '../../utils/DbUtils';
+import { moneyFormat } from '../../constants';
+import { Typography } from 'antd';
+import { useTranslation } from 'react-i18next';
 import BudgetChart from './BudgetChart';
 import BudgetProgress from './BudgetProgress';
-import Category from '../../db/models/Category';
 import moment from 'moment';
 import React, { useEffect } from 'react';
-import SubCategory from '../../db/models/SubCategory';
-import TableName from '../../db/TableName';
-import Tranasction from '../../db/models/Transaction';
-import { moneyFormat } from '../../constants';
-import { useTranslation } from 'react-i18next';
-import { CategoryData, getBudgetData } from '../../utils/DbUtils';
-import { Typography } from 'antd';
-import database from '../../db/database';
+import { useParams } from 'react-router-dom';
 
 interface BudgetCategoriesProps {
   tab: BudgetTab
-  categories: Array<Category>
-  subCategories: Array<SubCategory>
-  transactions: Array<Tranasction>
 }
 
-const BudgetCategories: React.FC<BudgetCategoriesProps> = ({ tab, categories, subCategories, transactions }) => {
+const BudgetCategories: React.FC<BudgetCategoriesProps> = ({ tab }) => {
 
   const { t } = useTranslation();
+  const { tenantId } = useParams();
   const [data, setData] = React.useState<Array<CategoryData>>([]);
 
   useEffect(() => {
     const fetchCategoryData = async () => {
-      const data = await getBudgetData();
+      if (!tenantId) return;
+      const data = await getBudgetData(tenantId);
       setData(data);
     }
 
     fetchCategoryData();
-  }, [setData]);
+  }, [setData, tenantId]);
 
   return (
     <table className='table-auto text-xl w-full text-center'>
@@ -74,10 +68,4 @@ const BudgetCategories: React.FC<BudgetCategoriesProps> = ({ tab, categories, su
   );
 };
 
-const enhance = withObservables([], () => ({
-  categories: database().collections.get<Category>(TableName.Categories).query(),
-  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(),
-  transactions: database().collections.get<Tranasction>(TableName.Transactions).query(),
-}));
-const EnhancedBudgetCategories = enhance(BudgetCategories);
-export default EnhancedBudgetCategories;
+export default BudgetCategories;

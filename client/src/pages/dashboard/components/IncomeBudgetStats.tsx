@@ -9,6 +9,7 @@ import Tranasction from '../../../db/models/Transaction';
 import SubCategory from '../../../db/models/SubCategory';
 import Money from '../../../common/Money';
 import database from '../../../db/database';
+import { useParams } from 'react-router-dom';
 
 interface IncomeBudgetStatsProps {
   categories: Array<Category>;
@@ -56,10 +57,13 @@ const IncomeBudgetStats: React.FC<IncomeBudgetStatsProps> = ({ categories, subCa
     </div>
   );
 };
-const enhance = withObservables([], () => ({
-  categories: database().collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
-  subCategories: database().collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
-  transactions: database().collections.get<Transaction>(TableName.Transactions).query(),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  categories: database(tenantId).collections.get<Category>(TableName.Categories).query(Q.sortBy('name')),
+  subCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(Q.sortBy('name')),
+  transactions: database(tenantId).collections.get<Transaction>(TableName.Transactions).query(),
 }));
-const EnhancedIncomeBudgetStats = enhance(IncomeBudgetStats);
+const EnhancedIncomeBudgetStats = () => {
+  const { tenantId } = useParams();
+  return enhance(IncomeBudgetStats)(tenantId);
+};
 export default EnhancedIncomeBudgetStats;
