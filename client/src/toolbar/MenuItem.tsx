@@ -12,7 +12,7 @@ const MenuItem: React.FC<MenuItemProps> = ({ icon, title, link, hideTitle }) => 
 
   const location = useLocation();
   const { tenantId } = useParams();
-  const highlight = location.pathname.startsWith(link);
+  const highlight = location.pathname.startsWith(`/tenants/${tenantId}/${link}`);
 
   return (
     <div className='flex flex-col items-center h-full'>
