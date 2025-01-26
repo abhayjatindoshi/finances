@@ -21,10 +21,10 @@ export default function Toolbar() {
   return (
     <>
       <div className="flex justify-center gap-12 text-xl" style={{ height: 'var(--ant-layout-header-height)' }}>
-        <MenuItem icon={<HomeOutlined />} title={t('app.home')} link="/dashboard" hideTitle={isPortrait} />
-        <MenuItem icon={<SwapOutlined />} title={t('app.transactions')} link="/transactions" hideTitle={isPortrait} />
-        <MenuItem icon={<PieChartOutlined />} title={t('app.budget')} link="/budget" hideTitle={isPortrait} />
-        <MenuItem icon={<SettingOutlined />} title={t('app.settings')} link="/settings" hideTitle={isPortrait} />
+        <MenuItem icon={<HomeOutlined />} title={t('app.home')} link="dashboard" hideTitle={isPortrait} />
+        <MenuItem icon={<SwapOutlined />} title={t('app.transactions')} link="transactions" hideTitle={isPortrait} />
+        <MenuItem icon={<PieChartOutlined />} title={t('app.budget')} link="budget" hideTitle={isPortrait} />
+        <MenuItem icon={<SettingOutlined />} title={t('app.settings')} link="settings" hideTitle={isPortrait} />
         {user && <Profile user={user} />}
       </div>
     </>

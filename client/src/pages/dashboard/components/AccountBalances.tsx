@@ -68,6 +68,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedAccountBalances = () => {
   const { tenantId } = useParams();
-  return enhance(AccountBalances)(tenantId);
+  const EnhancedAccountBalances = enhance(AccountBalances);
+  return <EnhancedAccountBalances tenantId={tenantId} />;
 };
 export default EnhancedAccountBalances;

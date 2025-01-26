@@ -47,7 +47,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
 
     const account = accounts?.find(account => account.id === accountId);
     if (!account) {
-      navigate('/settings/accounts');
+      navigate(`/tenants/${tenantId}/settings/accounts`);
       return;
     }
 
@@ -74,7 +74,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
       const dbAccount = accounts.find(account => account.id === accountId);
       if (!dbAccount) return;
       await dbAccount.markAsDeleted();
-      navigate('/settings/accounts');
+      navigate(`/tenants/${tenantId}/settings/accounts`);
     });
   }
 
@@ -90,7 +90,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
       await database(tenantId).write(async () => {
         const created = await database(tenantId).collections.get<Account>(TableName.Accounts)
           .create(a => setToAccount(account, a));
-        navigate(`/settings/accounts/${created.id}`);
+        navigate(`/tenants/${tenantId}/settings/accounts/${created.id}`);
       });
     } else {
       const dbAccount = accounts.find(account => account.id === accountId);
@@ -106,14 +106,14 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   function cancelEditing() {
     setEdit(false);
     if (accountId === 'new') {
-      navigate('/settings/accounts');
+      navigate(`/tenants/${tenantId}/settings/accounts`);
     }
   }
 
   return (
     <div className="flex flex-col gap-4 m-3" key="a">
       <div className="flex items-center gap-2">
-        {isPortrait && <LeftOutlined onClick={() => navigate('/settings/accounts')} />}
+        {isPortrait && <LeftOutlined onClick={() => navigate(`/tenants/${tenantId}/settings/accounts`)} />}
         <div className="text-xl grow">
           {edit ?
             <Input value={account.name} onChange={e => setAccount({ ...account, name: e.target.value })} /> :
@@ -165,6 +165,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedAccountSettings = () => {
   const { tenantId } = useParams();
-  return enhance(AccountSettings)(tenantId);
+  const EnhancedAccountSettings = enhance(AccountSettings);
+  return <EnhancedAccountSettings tenantId={tenantId} />;
 };
 export default EnhancedAccountSettings;

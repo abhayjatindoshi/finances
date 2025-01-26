@@ -51,7 +51,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
 
     const category = categories?.find(category => category.id === categoryId);
     if (!category) {
-      navigate('/settings/budget');
+      navigate(`/tenants/${tenantId}/settings/budget`);
       return;
     }
 
@@ -83,7 +83,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
       const dbCategory = categories.find(category => category.id === categoryId);
       if (!dbCategory) return;
       await dbCategory.markAsDeleted();
-      navigate('/settings/budget');
+      navigate(`/tenants/${tenantId}/settings/budget`);
     });
   }
 
@@ -101,7 +101,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
       await database(tenantId).write(async () => {
         const created = await database(tenantId).collections.get<Category>(TableName.Categories)
           .create(c => setToCategory(category, c));
-        navigate(`/settings/budget/${created.id}`);
+        navigate(`/tenants/${tenantId}/settings/budget/${created.id}`);
       });
     } else {
       const dbCategory = categories.find(category => category.id === categoryId);
@@ -117,7 +117,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   function cancelEditing() {
     setEdit(false);
     if (categoryId === 'new') {
-      navigate('/settings/budget');
+      navigate(`/tenants/${tenantId}/settings/budget`);
     }
   }
 
@@ -130,7 +130,7 @@ const CategorySettings: React.FC<CategorySettingsProps> = ({ categories, allSubC
   return (
     <div className="flex flex-col gap-4 m-3" key="a">
       <div className="flex items-center gap-2">
-        {isPortrait && <LeftOutlined onClick={() => navigate('/settings/budget')} />}
+        {isPortrait && <LeftOutlined onClick={() => navigate(`/tenants/${tenantId}/settings/budget`)} />}
         <div className="text-xl grow">
           {edit ?
             <Input value={category.name} onChange={e => setCategory({ ...category, name: e.target.value })} /> :
@@ -199,6 +199,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedCategorySettings = () => {
   const { tenantId } = useParams();
-  return enhance(CategorySettings)(tenantId);
+  const EnhancedCategorySettings = enhance(CategorySettings);
+  return <EnhancedCategorySettings tenantId={tenantId} />;
 };
 export default EnhancedCategorySettings;

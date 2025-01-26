@@ -57,6 +57,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedTransactionsPie = () => {
   const { tenantId } = useParams();
-  return enhance(TransactionsPie)(tenantId);
+  const EnhancedTransactionsPie = enhance(TransactionsPie);
+  return <EnhancedTransactionsPie tenantId={tenantId} />;
 };
 export default EnhancedTransactionsPie;

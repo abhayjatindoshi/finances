@@ -214,7 +214,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
       <div className='flex flex-col app-content-height'>
         <div className='m-2 flex flex-row gap-2'>
           <Dropdown menu={{
-            onClick: (selection) => navigate(`/transactions/${selection.key}`),
+            onClick: (selection) => navigate(`/tenants/${tenantId}/transactions/${selection.key}`),
             items: [{
               icon: <Avatar size={'small'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(all, antColors)}-6)` }} >{all.charAt(0).toUpperCase()}</Avatar>,
               key: all,
@@ -271,13 +271,14 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   );
 };
 
-const enhance = withObservables(['tenantId'], ({tenantId}) => ({
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
   accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(),
   subCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(),
   transactions: database(tenantId).collections.get<Transaction>(TableName.Transactions).query(Q.sortBy('transaction_at'))
 }));
 const EnhancedTransactionsPage = () => {
   const { tenantId } = useParams();
-  return enhance(TransactionsPage)(tenantId);
+  const EnhancedTransactionsPage = enhance(TransactionsPage);
+  return <EnhancedTransactionsPage tenantId={tenantId} />;
 }
 export default EnhancedTransactionsPage;

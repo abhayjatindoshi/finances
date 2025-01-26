@@ -1,7 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import AccountSettings from "./pages/settings/accounts/AccountSettings";
 import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
-import App from "./App";
 import BudgetPage from "./pages/budget/BudgetPage";
 import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
 import CategorySettings from "./pages/settings/budget/CategorySettings";
@@ -9,24 +8,21 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import ErrorPage from "./pages/ErrorPage";
 import RedirectToPage from "./pages/RedirectToPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import TenantsPage from "./pages/TenantsPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
+import AppLayout from "./common/AppLayout";
+import App from "./pages/App";
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <RedirectToPage to='/tenants' />,
+    element: <App />,
     children: [
       {
-        path: 'tenants',
-        element: <TenantsPage />
-      },
-      {
         path: 'tenants/:tenantId',
-        element: <App />,
+        element: <AppLayout />,
         children: [
           {
-            path: '/',
+            path: '',
             element: <RedirectToPage to="dashboard" />
           },
           {

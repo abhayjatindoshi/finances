@@ -44,9 +44,9 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   return (
     <div className='flex flex-col app-content-height'>
       <div className='flex flex-row m-2'>
-        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate('/settings')} />}
+        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate(`/tenants/${tenantId}/settings`)} />}
         <div className='text-xl grow'>{t('app.accounts')}</div>
-        <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate('/settings/accounts/new')}>
+        <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate(`/tenants/${tenantId}/settings/accounts/new`)}>
           {t('app.new')}
         </IconButton>
       </div>
@@ -57,7 +57,7 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
             backgroundColor: selectedAccountId === account.id ? 'var(--ant-blue-1)' : '',
             color: selectedAccountId === account.id ? 'var(--ant-blue-6)' : ''
           }}
-          onClick={() => navigate('/settings/accounts/' + account.id)}>
+          onClick={() => navigate(`/tenants/${tenantId}/settings/accounts/${account.id}`)}>
           <div className='flex flex-row items-center mx-3'>
             <Avatar size={'large'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account.name, antColors)}-6)` }} >{account.name.charAt(0).toUpperCase()}</Avatar>
             <div className='flex flex-col ml-3 gap-1'>
@@ -78,6 +78,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedCategorySettingsList = () => {
   const { tenantId } = useParams();
-  return enhance(AccountsSettingsList)(tenantId);
+  const EnhancedCategorySettingsList = enhance(AccountsSettingsList);
+  return <EnhancedCategorySettingsList tenantId={tenantId} />;
 };
 export default EnhancedCategorySettingsList;

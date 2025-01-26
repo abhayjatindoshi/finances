@@ -11,16 +11,16 @@ const BudgetPage: React.FC = () => {
 
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { tab } = useParams();
+  const { tab, tenantId } = useParams();
   const [selectedTab, setSelectedTab] = React.useState<BudgetTab>('monthly');
 
   React.useEffect(() => {
     if (tab === 'monthly' || tab === 'yearly') {
       setSelectedTab(tab);
     } else {
-      navigate('/budget/monthly');
+      navigate(`/tenants/${tenantId}/budget/monthly`);
     }
-  }, [navigate, tab]);
+  }, [navigate, tab, tenantId]);
 
   return (
     <>
@@ -31,7 +31,7 @@ const BudgetPage: React.FC = () => {
         <Segmented className='self-center' options={[
           { label: t('app.monthly'), value: 'monthly' },
           { label: t('app.yearly'), value: 'yearly' }
-        ]} value={selectedTab} onChange={(value) => navigate(`/budget/${value}`)} />
+        ]} value={selectedTab} onChange={(value) => navigate(`/tenants/${tenantId}/budget/${value}`)} />
       </div>
     </>
   );

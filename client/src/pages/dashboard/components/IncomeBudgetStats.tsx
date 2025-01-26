@@ -64,6 +64,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedIncomeBudgetStats = () => {
   const { tenantId } = useParams();
-  return enhance(IncomeBudgetStats)(tenantId);
+  const EnhancedIncomeBudgetStats = enhance(IncomeBudgetStats);
+  return <EnhancedIncomeBudgetStats tenantId={tenantId} />;
 };
 export default EnhancedIncomeBudgetStats;

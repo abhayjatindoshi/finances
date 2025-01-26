@@ -102,6 +102,7 @@ const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
 }));
 const EnhancedMonthlyCategoryCost = () => {
   const { tenantId } = useParams();
-  return enhance(MonthlyCategoryCost)(tenantId);
+  const EnhancedMonthlyCategoryCost = enhance(MonthlyCategoryCost);
+  return <EnhancedMonthlyCategoryCost tenantId={tenantId} />;
 };
 export default EnhancedMonthlyCategoryCost;

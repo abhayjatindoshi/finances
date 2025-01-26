@@ -1,23 +1,20 @@
-import React, { useEffect } from 'react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react';
 import { Tenant } from '../services/entities/Tenant';
-import tenantService from '../services/tenant-service';
 import { Link } from 'react-router-dom';
-import { Layout } from 'antd';
+import { Layout, Spin } from 'antd';
 import { RightOutlined } from '@ant-design/icons';
+import { useTranslation } from 'react-i18next';
 
-const TenantsPage: React.FC = () => {
+interface TenantsPageProps {
+  tenants: Tenant[];
+}
 
-  const [tenants, setTenants] = React.useState<Tenant[]>([]);
+const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
 
-  useEffect(() => {
-    tenantService.fetchAllTenants()
-      .then(setTenants);
-  }, []);
+  const { t } = useTranslation();
 
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function tenantToFolders(tenants: Tenant[]): any {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const root: any = {};
     tenants.forEach(tenant => {
       const keys = tenant.name.split('.');
@@ -29,15 +26,13 @@ const TenantsPage: React.FC = () => {
         currentLevel = currentLevel[key];
       });
     });
-    console.log(root);
     return root;
   }
+
   const folders = tenantToFolders(tenants);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const TenantFolders = ({ folders }: { folders: any }) => {
     return <>{Object.entries(folders)
       .sort(([key1], [key2]) => key1.localeCompare(key2))
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map(([key, value]: [string, any]) => {
         if ('name' in value) {
           return <Link to={`/tenants/${value.id}`} key={value.id}
@@ -57,12 +52,17 @@ const TenantsPage: React.FC = () => {
     </>
   };
 
-
   return (
     <Layout>
-      <div className="flex flex-col items-start mt-24 mx-auto overflow-auto">
-        <TenantFolders folders={folders} />
-      </div>
+      {tenants.length === 0 ?
+        <div className='flex flex-col gap-2 h-screen items-center justify-center'>
+          <Spin percent="auto" size='large' />
+          <div className='text-xl'>{t('app.loggingIn')}</div>
+        </div> :
+        <div className="flex flex-col items-start mt-24 mx-auto overflow-auto">
+          <TenantFolders folders={folders} />
+        </div>
+      }
     </Layout>
   );
 };

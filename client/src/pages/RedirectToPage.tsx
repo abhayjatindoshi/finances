@@ -9,10 +9,12 @@ const RedirectToPage: React.FC<RedirectToPageProps> = ({ to }) => {
 
   const navigate = useNavigate();
   const { tenantId } = useParams();
-
+  let url = to.charAt(0) === '/' ? to.substring(1) : to;
+  url = `/tenants/${tenantId}/${to}`;
+  
   useEffect(() => {
-    navigate(`/tenants/${tenantId}/${to}`);
-  });
+    navigate(url);
+  }, [navigate, url]);
 
   return (
     <></>

@@ -19,6 +19,10 @@ const database = (tenantId: string): Database => {
   return db;
 }
 
+export const allTenantIds = () => {
+  return Array.from(dbCache.keys());
+}
+
 const createNewDbInstance = (tenantId: string): Database => {
   return new Database({
     adapter: new LokiJSAdapter({
