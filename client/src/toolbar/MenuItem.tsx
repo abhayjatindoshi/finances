@@ -1,5 +1,5 @@
 import React, { } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 
 interface MenuItemProps {
   icon: React.ReactNode;
@@ -11,11 +11,12 @@ interface MenuItemProps {
 const MenuItem: React.FC<MenuItemProps> = ({ icon, title, link, hideTitle }) => {
 
   const location = useLocation();
-  const highlight = location.pathname.startsWith(link);
+  const { tenantId } = useParams();
+  const highlight = location.pathname.startsWith(`/tenants/${tenantId}/${link}`);
 
   return (
     <div className='flex flex-col items-center h-full'>
-      <Link className='grow flex flex-row items-center' to={link}>
+      <Link className='grow flex flex-row items-center' to={`/tenants/${tenantId}/${link}`}>
         <div className="flex items-center gap-2">
           {icon}
           {!hideTitle && <span> {title}</span>}

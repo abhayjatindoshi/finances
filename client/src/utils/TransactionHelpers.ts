@@ -1,4 +1,3 @@
-import { Cell, DateCell, Id, NumberCell, TextCell } from "@silevis/reactgrid";
 import Transaction from "../db/models/Transaction";
 import database from "../db/database";
 
@@ -42,95 +41,32 @@ export const convertToTransactionRows = (transactions: Array<Transaction>, selec
     }).reverse();
 }
 
-export const updateTransaction = async (transaction: TransactionRow, columnId: Id, updatedCell: Cell) => {
-  switch (columnId) {
-    case 'date': {
-      await update(transaction.raw, t => {
-        t.transactionAt = (updatedCell as DateCell).date ?? new Date(0);
-      });
-      break;
-    }
-
-    case 'title': {
-      await update(transaction.raw, t => {
-        t.title = (updatedCell as TextCell).text;
-      });
-      break;
-    }
-
-    case 'withdraw': {
-      await update(transaction.raw, t => {
-        t.amount = -(updatedCell as NumberCell).value;
-      });
-      break;
-    }
-
-    case 'deposit': {
-      await update(transaction.raw, t => {
-        t.amount = (updatedCell as NumberCell).value;
-      });
-      break;
-    }
-
-    case 'classification': {
-      try {
-        const rawText = (updatedCell as TextCell).text;
-        if (rawText === '') {
-          await update(transaction.raw, t => {
-            if (t.subCategory) t.subCategory.id = null;
-            if (t.transferAccount) t.transferAccount.id = null;
-          });
-          break;
-        }
-
-        const classification = JSON.parse(rawText);
-        if (classification.subCategoryId) {
-          await update(transaction.raw, t => {
-            if (t.subCategory) t.subCategory.id = classification.subCategoryId;
-            if (t.transferAccount) t.transferAccount.id = null;
-          });
-        }
-
-        if (classification.transferAccountId) {
-          await update(transaction.raw, t => {
-            if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
-            if (t.subCategory) t.subCategory.id = null;
-          });
-        }
-      } catch (e) {
-        console.error(e);
-      }
-      break;
-    }
-  }
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const updateTransactionRow = async (transaction: TransactionRow, columnName: string, updatedValue: any) => {
+export const updateTransactionRow = async (tenantId: string, transaction: TransactionRow, columnName: string, updatedValue: any) => {
   switch (columnName) {
     case 'date': {
-      await update(transaction.raw, t => {
+      await update(tenantId, transaction.raw, t => {
         t.transactionAt = updatedValue ?? new Date(0);
       });
       break;
     }
 
     case 'title': {
-      await update(transaction.raw, t => {
+      await update(tenantId, transaction.raw, t => {
         t.title = updatedValue;
       });
       break;
     }
 
     case 'withdraw': {
-      await update(transaction.raw, t => {
+      await update(tenantId, transaction.raw, t => {
         t.amount = -updatedValue;
       });
       break;
     }
 
     case 'deposit': {
-      await update(transaction.raw, t => {
+      await update(tenantId, transaction.raw, t => {
         t.amount = updatedValue;
       });
       break;
@@ -139,7 +75,7 @@ export const updateTransactionRow = async (transaction: TransactionRow, columnNa
     case 'classification': {
       try {
         if (!updatedValue || !updatedValue.value) {
-          await update(transaction.raw, t => {
+          await update(tenantId, transaction.raw, t => {
             if (t.subCategory) t.subCategory.id = null;
             if (t.transferAccount) t.transferAccount.id = null;
           });
@@ -149,14 +85,14 @@ export const updateTransactionRow = async (transaction: TransactionRow, columnNa
         const rawText = updatedValue.value;
         const classification = JSON.parse(rawText);
         if (classification.subCategoryId) {
-          await update(transaction.raw, t => {
+          await update(tenantId, transaction.raw, t => {
             if (t.subCategory) t.subCategory.id = classification.subCategoryId;
             if (t.transferAccount) t.transferAccount.id = null;
           });
         }
 
         if (classification.transferAccountId) {
-          await update(transaction.raw, t => {
+          await update(tenantId, transaction.raw, t => {
             if (t.transferAccount) t.transferAccount.id = classification.transferAccountId;
             if (t.subCategory) t.subCategory.id = null;
           });
@@ -169,8 +105,8 @@ export const updateTransactionRow = async (transaction: TransactionRow, columnNa
   }
 }
 
-const update = async (transaction: Transaction, updater: (t: Transaction) => void) => {
-  return await database().write(async () => {
+const update = async (tenantId: string, transaction: Transaction, updater: (t: Transaction) => void) => {
+  return await database(tenantId).write(async () => {
     await transaction.update(updater);
   });
 }

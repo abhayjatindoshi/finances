@@ -8,7 +8,7 @@ import React, { useEffect } from 'react';
 import TableName from '../../../db/TableName';
 import moment from 'moment';
 import { antColors, dateTimeFormat, moneyFormat } from '../../../constants';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { pickRandomByHash } from '../../../utils/Common';
 import { SwapOutlined } from '@ant-design/icons';
 import database from '../../../db/database';
@@ -19,16 +19,18 @@ interface AccountBalancesProps {
 
 const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
 
+  const { tenantId } = useParams();
   const { t } = useTranslation();
   const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
 
   useEffect(() => {
     const fetchBalances = async () => {
-      const balances = await getBalanceMap();
+      if (!tenantId) return;
+      const balances = await getBalanceMap(tenantId);
       setBalanceMap(balances);
     };
     fetchBalances();
-  }, [accounts]);
+  }, [accounts, tenantId]);
 
   function AccountCard({ account }: { account: Account }) {
     const [hover, setHover] = React.useState(false);
@@ -61,8 +63,12 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
     </div>
   );
 };
-const enhance = withObservables([], () => ({
-  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(Q.sortBy('name'))
 }));
-const EnhancedAccountBalances = enhance(AccountBalances);
+const EnhancedAccountBalances = () => {
+  const { tenantId } = useParams();
+  const EnhancedAccountBalances = enhance(AccountBalances);
+  return <EnhancedAccountBalances tenantId={tenantId} />;
+};
 export default EnhancedAccountBalances;

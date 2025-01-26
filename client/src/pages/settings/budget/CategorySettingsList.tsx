@@ -3,7 +3,7 @@ import { withObservables } from '@nozbe/watermelondb/react';
 import React, { ReactNode, useEffect } from 'react';
 import Category from '../../../db/models/Category';
 import { Avatar, List } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
@@ -22,6 +22,7 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { tenantId } = useParams();
   const { t } = useTranslation();
   const selectedCategoryId = location.pathname.split('/').pop();
   const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
@@ -47,9 +48,9 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   return (
     <div className='flex flex-col app-content-height'>
       <div className='flex flex-row items-center m-2'>
-        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate('/settings')} />}
+        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate(`/tenants/${tenantId}/settings`)} />}
         <div className='text-xl grow'>{t('app.categories')}</div>
-        <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate('/settings/budget/new')}>
+        <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate(`/tenants/${tenantId}/settings/budget/new`)}>
           {t('app.new')}
         </IconButton>
       </div>
@@ -59,7 +60,7 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
             backgroundColor: selectedCategoryId === category.id ? 'var(--ant-blue-1)' : '',
             color: selectedCategoryId === category.id ? 'var(--ant-blue-6)' : ''
           }}
-          onClick={() => navigate('/settings/budget/' + category.id)}>
+          onClick={() => navigate(`/tenants/${tenantId}/settings/budget/${category.id}`)}>
           <div className='flex flex-row items-center mx-3'>
             <Avatar size={'large'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(category.name, antColors)}-6)` }}>{category.type.charAt(0)}</Avatar>
             <div className='flex flex-col ml-3 gap-1'>
@@ -75,8 +76,13 @@ const CategorySettingsList: React.FC<CategorySettingsListProps> = ({ categories 
   );
 };
 
-const enhance = withObservables([], () => ({
-  categories: database().collections.get<Category>('categories').query(Q.sortBy('name')),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  categories: database(tenantId).collections.get<Category>('categories').query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettingsList = enhance(CategorySettingsList);
+const EnhancedCategorySettingsList = () => {
+  const { tenantId } = useParams();
+  const EnhancedCategorySettingsList = enhance(CategorySettingsList);
+  return <EnhancedCategorySettingsList tenantId={tenantId} />;
+};
+
 export default EnhancedCategorySettingsList;

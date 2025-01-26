@@ -2,7 +2,7 @@ import { Q } from '@nozbe/watermelondb';
 import { withObservables } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
 import { Avatar, List } from 'antd';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Money from '../../../common/Money';
 import { useTranslation } from 'react-i18next';
 import IconButton from '../../../common/IconButton';
@@ -25,26 +25,28 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { tenantId } = useParams();
   const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
   const selectedAccountId = location.pathname.split('/').pop();
   const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
 
   useEffect(() => {
     const fetchBalances = async () => {
-      const balances = await getBalanceMap();
+      if (!tenantId) return;
+      const balances = await getBalanceMap(tenantId);
       setBalanceMap(balances);
     };
     fetchBalances();
     const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
     return unsubscribeAll(screenSubscription);
-  }, [accounts]);
+  }, [accounts, tenantId]);
 
   return (
     <div className='flex flex-col app-content-height'>
       <div className='flex flex-row m-2'>
-        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate('/settings')} />}
+        {isPortrait && <LeftOutlined className='mr-1' onClick={() => navigate(`/tenants/${tenantId}/settings`)} />}
         <div className='text-xl grow'>{t('app.accounts')}</div>
-        <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate('/settings/accounts/new')}>
+        <IconButton type='primary' icon={<PlusOutlined />} onClick={() => navigate(`/tenants/${tenantId}/settings/accounts/new`)}>
           {t('app.new')}
         </IconButton>
       </div>
@@ -55,7 +57,7 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
             backgroundColor: selectedAccountId === account.id ? 'var(--ant-blue-1)' : '',
             color: selectedAccountId === account.id ? 'var(--ant-blue-6)' : ''
           }}
-          onClick={() => navigate('/settings/accounts/' + account.id)}>
+          onClick={() => navigate(`/tenants/${tenantId}/settings/accounts/${account.id}`)}>
           <div className='flex flex-row items-center mx-3'>
             <Avatar size={'large'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account.name, antColors)}-6)` }} >{account.name.charAt(0).toUpperCase()}</Avatar>
             <div className='flex flex-col ml-3 gap-1'>
@@ -71,8 +73,12 @@ const AccountsSettingsList: React.FC<AccountsSettingsListProps> = ({ accounts })
   );
 };
 
-const enhance = withObservables([], () => ({
-  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
 }));
-const EnhancedCategorySettingsList = enhance(AccountsSettingsList);
+const EnhancedCategorySettingsList = () => {
+  const { tenantId } = useParams();
+  const EnhancedCategorySettingsList = enhance(AccountsSettingsList);
+  return <EnhancedCategorySettingsList tenantId={tenantId} />;
+};
 export default EnhancedCategorySettingsList;

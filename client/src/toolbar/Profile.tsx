@@ -1,11 +1,12 @@
 import { Dropdown, Avatar, MenuProps, Badge } from "antd";
 import React, { useEffect, useState } from "react";
-import { User } from "../pages/AppLoaderPage";
 import { useTranslation } from "react-i18next";
 import { logoutUrl } from "../constants";
-import { DownloadOutlined, LogoutOutlined, SyncOutlined } from "@ant-design/icons";
+import { DownloadOutlined, LogoutOutlined, SwapOutlined, SyncOutlined } from "@ant-design/icons";
 import { BeforeInstallPromptEvent } from "../utils/BeforeInstallPromptEvent";
-import { syncNow } from "../db/sync";
+import { User } from "../services/entities/User";
+import syncManager from "../db/sync-manager";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface ProfileProps {
   user: User
@@ -14,6 +15,8 @@ interface ProfileProps {
 const Profile: React.FC<ProfileProps> = ({ user }) => {
 
   const { t } = useTranslation();
+  const { tenantId } = useParams();
+  const navigate = useNavigate();
   const [profileImageError, setProfileImageError] = useState<boolean>(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
@@ -45,8 +48,15 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
         icon: <SyncOutlined />,
         key: 'sync',
         onClick: () => {
-          syncNow(true);
+          if (!tenantId) return;
+          syncManager.sync(tenantId, { replacement: true });
         }
+      },
+      {
+        label: t('app.switchHousehold'),
+        icon: <SwapOutlined />,
+        key: 'switchHousehold',
+        onClick: () => navigate('/'),
       },
       {
         label: t('app.logout'),

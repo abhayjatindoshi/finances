@@ -26,6 +26,8 @@ interface RawAccount {
 const defaultAccount: RawAccount = { id: '', name: '', initialBalance: 0, };
 
 const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
+
+  const { tenantId } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { accountId } = useParams();
@@ -45,7 +47,7 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
 
     const account = accounts?.find(account => account.id === accountId);
     if (!account) {
-      navigate('/settings/accounts');
+      navigate(`/tenants/${tenantId}/settings/accounts`);
       return;
     }
 
@@ -55,22 +57,24 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
       initialBalance: account.initialBalance,
     })
 
-    database().collections.get<Tranasction>(TableName.Transactions)
+    if (!tenantId) return;
+    database(tenantId).collections.get<Tranasction>(TableName.Transactions)
       .query(Q.where('account_id', account.id))
       .fetchCount().then(setTotalDependencyCount);
 
     const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
     return unsubscribeAll(screenSubscription);
 
-  }, [accountId, accounts, navigate]);
+  }, [accountId, accounts, navigate, tenantId]);
 
   function deleteAccount() {
+    if (!tenantId) return;
     if (totalDependencyCount > 0) return;
-    database().write(async () => {
+    database(tenantId).write(async () => {
       const dbAccount = accounts.find(account => account.id === accountId);
       if (!dbAccount) return;
       await dbAccount.markAsDeleted();
-      navigate('/settings/accounts');
+      navigate(`/tenants/${tenantId}/settings/accounts`);
     });
   }
 
@@ -80,17 +84,18 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   }
 
   async function saveAccount() {
+    if (!tenantId) return;
     setSaving(true);
     if (accountId === 'new') {
-      await database().write(async () => {
-        const created = await database().collections.get<Account>(TableName.Accounts)
+      await database(tenantId).write(async () => {
+        const created = await database(tenantId).collections.get<Account>(TableName.Accounts)
           .create(a => setToAccount(account, a));
-        navigate(`/settings/accounts/${created.id}`);
+        navigate(`/tenants/${tenantId}/settings/accounts/${created.id}`);
       });
     } else {
       const dbAccount = accounts.find(account => account.id === accountId);
       if (!dbAccount) return;
-      await database().write(async () => {
+      await database(tenantId).write(async () => {
         await dbAccount.update(a => setToAccount(account, a));
       });
     }
@@ -101,14 +106,14 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   function cancelEditing() {
     setEdit(false);
     if (accountId === 'new') {
-      navigate('/settings/accounts');
+      navigate(`/tenants/${tenantId}/settings/accounts`);
     }
   }
 
   return (
     <div className="flex flex-col gap-4 m-3" key="a">
       <div className="flex items-center gap-2">
-        {isPortrait && <LeftOutlined onClick={() => navigate('/settings/accounts')} />}
+        {isPortrait && <LeftOutlined onClick={() => navigate(`/tenants/${tenantId}/settings/accounts`)} />}
         <div className="text-xl grow">
           {edit ?
             <Input value={account.name} onChange={e => setAccount({ ...account, name: e.target.value })} /> :
@@ -155,8 +160,12 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ accounts }) => {
   );
 };
 
-const enhance = withObservables([], () => ({
-  accounts: database().collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
+const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
+  accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(Q.sortBy('name')),
 }));
-const EnhancedAccountSettings = enhance(AccountSettings);
+const EnhancedAccountSettings = () => {
+  const { tenantId } = useParams();
+  const EnhancedAccountSettings = enhance(AccountSettings);
+  return <EnhancedAccountSettings tenantId={tenantId} />;
+};
 export default EnhancedAccountSettings;

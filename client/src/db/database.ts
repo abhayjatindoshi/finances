@@ -1,43 +1,39 @@
-import LokiJSAdapter from "@nozbe/watermelondb/adapters/lokijs";
-import { schema } from "./schema";
-import migrations from "./migrations";
 import { Database } from "@nozbe/watermelondb";
+import { schema } from "./schema";
 import Account from "./models/Account";
 import Category from "./models/Category";
+import LokiJSAdapter from "@nozbe/watermelondb/adapters/lokijs";
+import migrations from "./migrations";
 import SubCategory from "./models/SubCategory";
 import Tranasction from "./models/Transaction";
-import { Tenant } from "../pages/AppLoaderPage";
-import { tenantsApiUrl } from "../constants";
 
-let currentDatabase: Database | undefined;
+const allModels = [Account, Category, SubCategory, Tranasction];
+const dbCache = new Map<string, Database>();
 
-export async function loadDatabase(): Promise<void> {
-  const tenants = await fetch(tenantsApiUrl).then(res => res.json());
-  if (tenants.length === 0) {
-    window.location.href = '/error?error=app.noTenants';
-    return;
+const database = (tenantId: string): Database => {
+  let db: Database | undefined = dbCache.get(tenantId);
+  if (!db) {
+    db = createNewDbInstance(tenantId);
+    dbCache.set(tenantId, db);
   }
-  setCurrentDatabase(tenants[0]);
+  return db;
 }
 
-function setCurrentDatabase(tenant: Tenant) {
-  currentDatabase = new Database({
+export const allTenantIds = () => {
+  return Array.from(dbCache.keys());
+}
+
+const createNewDbInstance = (tenantId: string): Database => {
+  return new Database({
     adapter: new LokiJSAdapter({
       schema,
       migrations,
       useWebWorker: false,
       useIncrementalIndexedDB: true,
-      dbName: tenant.id
+      dbName: tenantId
     }),
-    modelClasses: [Account, Category, SubCategory, Tranasction]
+    modelClasses: allModels
   });
-}
-
-const database = (): Database => {
-  if (!currentDatabase) {
-    throw new Error('Database not loaded');
-  }
-  return currentDatabase;
 }
 
 export default database;
