@@ -11,6 +11,7 @@ import SettingsPage from "./pages/settings/SettingsPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
 import AppLayout from "./common/AppLayout";
 import App from "./pages/App";
+import BudgetSettings from "./pages/settings/budget-new/BudgetSettings";
 
 const router = createBrowserRouter([
   {
@@ -55,7 +56,7 @@ const router = createBrowserRouter([
                 ]
               }, {
                 path: 'budget',
-                element: <BudgetSettingsPage />,
+                element: <BudgetSettings />,
                 children: [
                   {
                     path: ':categoryId',

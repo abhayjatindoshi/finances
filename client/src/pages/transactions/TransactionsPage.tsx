@@ -253,7 +253,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
           </div>
           {account && <div className='flex flex-row items-baseline gap-2'>
             <span className='text-sm' style={{ color: 'var(--ant-color-text-description)' }}>{t('app.currentBalance')}</span>
-            <span className='text-xl'><Money amount={transactionRows[0].balance} /></span>
+            <span className='text-xl'><Money amount={transactionRows[0]?.balance} /></span>
           </div>}
         </div>
         <AgGridReact<TransactionRow>

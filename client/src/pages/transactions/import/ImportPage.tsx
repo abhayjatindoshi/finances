@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Account from '../../../db/models/Account';
 import IconButton from '../../../common/IconButton';
-import { detectImportFormat, ImportFormat, RawTransaction, readExcelFile, readTransactionsFromWorksheet } from '../../../utils/FileUtils';
+import { detectImportFormat, ImportFormat, RawTransaction, readTransactions } from '../../../utils/FileUtils';
 import Money from '../../../common/Money';
 import database from '../../../db/database';
 import Tranasction from '../../../db/models/Transaction';
@@ -35,31 +35,28 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
   const { Text } = Typography;
   const { tenantId } = useParams();
   const [status, setStatus] = React.useState<ImportStatus>(ImportStatus.Waiting);
-  const [worksheet, setWorksheet] = React.useState<Array<string[][]>>([]);
+  const [file, setFile] = React.useState<File>();
   const [importFormat, setImportFormat] = React.useState<ImportFormat | undefined>();
   const [transactions, setTransactions] = React.useState<RawTransaction[]>([]);
   const [selectedTransactions, setSelectedTransactions] = React.useState<RawTransaction[]>([]);
 
   function handleUpload(file: File): boolean {
     setStatus(ImportStatus.Detecting);
-    readExcelFile(file).then(worksheet => {
-      setWorksheet(worksheet);
-      setImportFormat(detectImportFormat(worksheet));
+    detectImportFormat(file).then(format => {
+      setFile(file);
+      setImportFormat(format);
       setStatus(ImportStatus.Detected);
     })
     return false;
   }
 
-  function readData() {
-    if (importFormat === undefined) return;
+  async function readData() {
+    if (importFormat === undefined || file === undefined) return;
     setStatus(ImportStatus.Reading);
-    readTransactionsFromWorksheet(importFormat, worksheet).then(transactions => {
-      transactions = transactions
-        .sort((a, b) => b.transactionAt.getTime() - a.transactionAt.getTime());
-      setTransactions(transactions);
-      setSelectedTransactions([]);
-      setStatus(ImportStatus.Success);
-    })
+    const transactions = await readTransactions(importFormat, file);
+    setTransactions(transactions.sort((a, b) => b.transactionAt.getTime() - a.transactionAt.getTime()));
+    setSelectedTransactions([]);
+    setStatus(ImportStatus.Success);
   }
 
   function importData() {
