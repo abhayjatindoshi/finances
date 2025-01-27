@@ -1,18 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
 import AccountSettings from "./pages/settings/accounts/AccountSettings";
 import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
+import App from "./pages/App";
+import AppLayout from "./common/AppLayout";
 import BudgetPage from "./pages/budget/BudgetPage";
 import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
 import CategorySettings from "./pages/settings/budget/CategorySettings";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ErrorPage from "./pages/ErrorPage";
 import RedirectToPage from "./pages/RedirectToPage";
-import RedirectToPage from "./pages/RedirectToPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
-import AppLayout from "./common/AppLayout";
-import App from "./pages/App";
-import BudgetSettings from "./pages/settings/budget-new/BudgetSettings";
 
 const router = createBrowserRouter([
   {
@@ -57,7 +55,7 @@ const router = createBrowserRouter([
                 ]
               }, {
                 path: 'budget',
-                element: <BudgetSettings />,
+                element: <BudgetSettingsPage />,
                 children: [
                   {
                     path: ':categoryId',
