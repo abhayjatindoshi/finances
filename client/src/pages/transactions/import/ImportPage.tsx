@@ -1,16 +1,17 @@
 import { CheckOutlined, CloseCircleOutlined, ImportOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Select, Table, Typography, Upload } from 'antd';
+import { Card, Table, Typography, Upload } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Account from '../../../db/models/Account';
 import IconButton from '../../../common/IconButton';
-import { detectImportFormat, ImportFormat, RawTransaction, readTransactions } from '../../../utils/FileUtils';
 import Money from '../../../common/Money';
 import database from '../../../db/database';
 import Tranasction from '../../../db/models/Transaction';
 import TableName from '../../../db/TableName';
 import Time from '../../../common/Time';
 import { useParams } from 'react-router-dom';
+import importService, { CompatibleBank } from '../../../services/import/import-service';
+import { ImportedData, ImportedTransaction } from '../../../services/import/import-adapter';
 
 interface ImportPageProps {
   account: Account;
@@ -35,26 +36,35 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
   const { Text } = Typography;
   const { tenantId } = useParams();
   const [status, setStatus] = React.useState<ImportStatus>(ImportStatus.Waiting);
-  const [file, setFile] = React.useState<File>();
-  const [importFormat, setImportFormat] = React.useState<ImportFormat | undefined>();
-  const [transactions, setTransactions] = React.useState<RawTransaction[]>([]);
-  const [selectedTransactions, setSelectedTransactions] = React.useState<RawTransaction[]>([]);
+  const [compatibleBanks, setCompatibleBanks] = React.useState<Array<CompatibleBank>>([]);
+  const [importedData, setImportedData] = React.useState<ImportedData | undefined>();
+  const [selectedTransactions, setSelectedTransactions] = React.useState<Array<ImportedTransaction>>([]);
 
   function handleUpload(file: File): boolean {
-    setStatus(ImportStatus.Detecting);
-    detectImportFormat(file).then(format => {
-      setFile(file);
-      setImportFormat(format);
-      setStatus(ImportStatus.Detected);
-    })
+    importTransactions(file);
     return false;
   }
 
-  async function readData() {
-    if (importFormat === undefined || file === undefined) return;
+  async function importTransactions(file: File) {
+    if (!file) return;
+    const compatibleBanks = await importService.findCompatibleBanks(file);
+    if (compatibleBanks.length === 0) {
+      setStatus(ImportStatus.Error);
+      return;
+    } else if (compatibleBanks.length === 1) {
+      readData(compatibleBanks[0]);
+      setStatus(ImportStatus.Detected);
+    } else {
+      setCompatibleBanks(compatibleBanks);
+      setStatus(ImportStatus.Detected);
+    }
+  }
+
+  async function readData(compatibleBank: CompatibleBank) {
     setStatus(ImportStatus.Reading);
-    const transactions = await readTransactions(importFormat, file);
-    setTransactions(transactions.sort((a, b) => b.transactionAt.getTime() - a.transactionAt.getTime()));
+    setCompatibleBanks([compatibleBank]);
+    const importedData = await compatibleBank.import();
+    setImportedData(importedData);
     setSelectedTransactions([]);
     setStatus(ImportStatus.Success);
   }
@@ -100,20 +110,18 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
 
       {status === ImportStatus.Detected &&
         <div className='flex flex-col items-center gap-4'>
-          {importFormat !== undefined ?
-            <div><b>{t('app.detectedFormat')}: </b>{ImportFormat[importFormat]}</div> :
+          {compatibleBanks.length === 1 ?
+            <div><b>{t('app.detectedFormat')}: </b>{compatibleBanks[0].name}</div> :
             <>
               <div>{t('app.formatNotDetected')}</div>
-              <Select placeholder={t('app.selectFormat')} value={importFormat} onChange={setImportFormat} className='mb-4'>
-                <Select.Option value={ImportFormat.JUPITER}>{t('app.jupiter')}</Select.Option>
-                <Select.Option value={ImportFormat.HDFC}>{t('app.hdfc')}</Select.Option>
-              </Select>
+              <div className='flex flex-row gap-4'>
+                {compatibleBanks.map(bank =>
+                  <Card key={bank.name} className='cursor-pointer' hoverable onClick={() => readData(bank)} >{bank.name}</Card>
+                )}
+              </div>
+              <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
             </>
           }
-          <div className='flex flex-row gap-2'>
-            <IconButton type='primary' icon={<CheckOutlined />} onClick={() => readData()}>{t('app.continue')}</IconButton>
-            <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
-          </div>
         </div>
       }
 
@@ -131,7 +139,9 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
         <div>
           <div className='flex flex-row'>
             <div className='grow flex flex-col'>
-              <div><b>Found Transactions:</b> {transactions.length} </div>
+              <div><b>Bank:</b> {compatibleBanks[0].name} {importedData?.bankMedium}</div>
+              <div><b>File Format:</b> {importedData?.importFormat}</div>
+              <div><b>Found Transactions:</b> {importedData?.transactions.length} </div>
               <div><b>Selected Transactions:</b> {selectedTransactions.length} </div>
             </div>
             <div className='flex flex-row gap-2'>
@@ -139,7 +149,7 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
               <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
             </div>
           </div>
-          <Table dataSource={transactions} pagination={false} size='small' rowSelection={{ type: 'checkbox', onChange: (_, selectedTransactions) => setSelectedTransactions(selectedTransactions) }} rowKey="id">
+          <Table dataSource={importedData?.transactions} pagination={false} size='small' rowSelection={{ type: 'checkbox', onChange: (_, selectedTransactions) => setSelectedTransactions(selectedTransactions) }} rowKey="id">
             <Column title={t('app.time')} dataIndex='transactionAt' key='transactionAt' render={(transactionAt: Date) => <Time time={transactionAt} />} />
             <Column title={t('app.title')} dataIndex='title' key='title' render={(title: string) => <Text ellipsis className='w-48'>{title}</Text>} />
             <Column title={t('app.withdraw')} dataIndex='amount' key='amount' className='text-right' render={(amount: number) => amount < 0 ? <Money amount={-amount} /> : ''} />
@@ -155,6 +165,16 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
             {selectedTransactions.length} {t('app.transactionsImported')}
           </div>
           <IconButton icon={<CloseCircleOutlined />} onClick={() => { setStatus(ImportStatus.Waiting); onClose && onClose(); }}>{t('app.close')}</IconButton>
+        </div>
+      }
+
+      {status === ImportStatus.Error &&
+        <div className='flex flex-col items-center gap-4'>
+          <div className='flex flex-row items-center gap-2'>
+            <CloseCircleOutlined className='text-2xl' />
+            {t('app.formatNotSupported')}
+          </div>
+          <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.close')}</IconButton>
         </div>
       }
     </>
