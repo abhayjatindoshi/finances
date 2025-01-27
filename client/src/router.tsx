@@ -7,6 +7,7 @@ import CategorySettings from "./pages/settings/budget/CategorySettings";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ErrorPage from "./pages/ErrorPage";
 import RedirectToPage from "./pages/RedirectToPage";
+import RedirectToPage from "./pages/RedirectToPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
 import AppLayout from "./common/AppLayout";
