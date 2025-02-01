@@ -33,10 +33,7 @@ export const readExcelFile = (file: ArrayBuffer): ExcelWorkbook => {
   return sheets;
 }
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
 
 export const readPdfFile = async (file: ArrayBuffer): Promise<string[]> => {
   const pdf = await pdfjs.getDocument({ data: file }).promise
