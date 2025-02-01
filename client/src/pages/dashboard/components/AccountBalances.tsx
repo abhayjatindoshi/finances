@@ -55,7 +55,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
   }
 
   return (
-    <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '26rem' }}>
+    <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '28rem' }}>
       <div className='text-xl font-semibold mb-2'>{t('app.currentBalance')}</div>
       <div className='flex flex-wrap gap-2 items-center justify-center'>
         {accounts.map(account => <AccountCard key={account.id} account={account} />)}

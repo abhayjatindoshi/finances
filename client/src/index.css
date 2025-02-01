@@ -40,6 +40,16 @@ svg {
   position: absolute !important;
 }
 
+.input-button-expandable input {
+  width: 0;
+}
+
+.input-button-expandable input:focus {
+  transition: all 0.5s;
+  min-width: 15rem;
+  width: 85vw;
+}
+
 /***************** AG Grid Overrides ****************/
 
 .ag-header {

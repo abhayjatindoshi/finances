@@ -7,7 +7,7 @@ import { ColDef, AllCommunityModule, ModuleRegistry, colorSchemeDark, themeAlpin
 import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
 import { pickRandomByHash } from '../../utils/Common';
 import { Q } from '@nozbe/watermelondb';
-import { useForceUpdate } from '../../utils/ComponentUtils';
+import { unsubscribeAll, useForceUpdate } from '../../utils/ComponentUtils';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { withObservables } from '@nozbe/watermelondb/react';
@@ -16,10 +16,11 @@ import database from '../../db/database';
 import IconButton from '../../common/IconButton';
 import ImportPage from './import/ImportPage';
 import Money from '../../common/Money';
-import React from 'react';
+import React, { useEffect } from 'react';
 import SubCategory from '../../db/models/SubCategory';
 import TableName from '../../db/TableName';
 import Transaction from '../../db/models/Transaction';
+import { subscribeTo } from '../../utils/GlobalVariable';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -37,6 +38,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   const { accountId, tenantId } = useParams();
   const navigate = useNavigate();
   const forceUpdate = useForceUpdate();
+  const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
   const [importDrawerOpen, setImportDrawerOpen] = React.useState<boolean>(false);
   const [selectedTransactionIds, setSelectedTransactionIds] = React.useState<string[]>([]);
   const [searchText, setSearchText] = React.useState<string>('');
@@ -50,6 +52,10 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
       backgroundColor: '#141414'
     })
 
+  useEffect(() => {
+    const screenSubscription = subscribeTo('isScreenLandscape', (b) => setIsPortrait(!b));
+    return unsubscribeAll(screenSubscription);
+  }, []);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getClassificationTitle(classification: any): string {
@@ -118,8 +124,8 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
       valueGetter: 'node.rowIndex + 1'
     },
     {
-      minWidth: 150,
-      width: 170,
+      minWidth: 200,
+      width: 230,
       headerName: t('app.account'),
       field: 'raw.account',
       hide: account !== undefined,
@@ -129,8 +135,8 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
       })
     },
     {
-      minWidth: 170,
-      width: 200,
+      minWidth: 200,
+      width: 230,
       headerName: t('app.subCategory'),
       field: 'classification',
       editable: true,
@@ -212,7 +218,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   return (
     <>
       <div className='flex flex-col app-content-height'>
-        <div className='m-2 flex flex-row gap-2'>
+        <div className='m-2 flex flex-row gap-2 flex-wrap'>
           <Dropdown menu={{
             onClick: (selection) => navigate(`/tenants/${tenantId}/transactions/${selection.key}`),
             items: [{
@@ -232,8 +238,8 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
               {account ? account.name : t('app.all')} <DownOutlined />
             </div>
           </Dropdown>
-          <div className='grow' >
-            <Input className='w-full' prefix={<SearchOutlined />}
+          <div className={!isPortrait ? 'grow' : ''} >
+            <Input className={isPortrait ? 'input-button-expandable' : ''} prefix={<SearchOutlined />}
               placeholder={t('app.search')} onChange={e => setSearchText(e.target.value)} />
           </div>
           <div className="flex flex-row gap-2">
@@ -250,11 +256,11 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
               </Popconfirm>
             }
             {account && <IconButton icon={<DownloadOutlined />} onClick={() => setImportDrawerOpen(true)}>{t('app.import')}</IconButton>}
+            {account && <div className='flex flex-row items-center gap-2'>
+              <span className='text-sm' style={{ color: 'var(--ant-color-text-description)' }}>{t('app.currentBalance')}</span>
+              <span className='text-xl'><Money amount={transactionRows[0]?.balance} /></span>
+            </div>}
           </div>
-          {account && <div className='flex flex-row items-baseline gap-2'>
-            <span className='text-sm' style={{ color: 'var(--ant-color-text-description)' }}>{t('app.currentBalance')}</span>
-            <span className='text-xl'><Money amount={transactionRows[0]?.balance} /></span>
-          </div>}
         </div>
         <AgGridReact<TransactionRow>
           theme={theme}
