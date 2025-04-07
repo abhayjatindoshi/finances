@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { Input, Layout, Modal, Spin } from 'antd';
 import React from 'react';
-import { Tenant } from '../services/entities/Tenant';
-import { Link } from 'react-router-dom';
-import { Layout, Spin } from 'antd';
-import { RightOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
+import IconButton from '../common/IconButton';
+import { Tenant } from '../services/entities/Tenant';
+import tenantService from '../services/tenant-service';
 
 interface TenantsPageProps {
   tenants: Tenant[];
@@ -13,6 +15,9 @@ interface TenantsPageProps {
 const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [newTenantName, setNewTenantName] = React.useState('');
+  const [showNewTenantModal, setShowNewTenantModal] = React.useState(false);
 
   function tenantToFolders(tenants: Tenant[]): any {
     const root: any = {};
@@ -36,7 +41,7 @@ const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
       .map(([key, value]: [string, any]) => {
         if ('name' in value) {
           return <Link to={`/tenants/${value.id}`} key={value.id}
-            className='flex flex-row justify-between w-72 bg-zinc-900 hover:bg-zinc-800 p-3 rounded'>
+            className='flex flex-row justify-between w-72 bg-zinc-900 hover:bg-zinc-800 p-3 ml-5 rounded'>
             <div className=''>{key}</div>
             <RightOutlined />
           </Link>
@@ -52,6 +57,11 @@ const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
     </>
   };
 
+  const createTenant = async () => {
+    const tenant = await tenantService.createTenant(newTenantName);
+    navigate(`/tenants/${tenant.id}/settings/tenant`);
+  }
+
   return (
     <Layout>
       {tenants.length === 0 ?
@@ -61,6 +71,15 @@ const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
         </div> :
         <div className="flex flex-col items-start mt-24 mx-auto overflow-auto">
           <TenantFolders folders={folders} />
+          <IconButton className='mt-5 ml-10' icon={<PlusOutlined />} onClick={() => setShowNewTenantModal(true)}>
+            {t('app.new')}
+          </IconButton>
+          <Modal open={showNewTenantModal} title={t('app.new') + ' ' + t('app.tenant')}
+            onCancel={() => setShowNewTenantModal(false)}
+            onOk={createTenant}>
+            <Input placeholder={t('app.tenant') + ' ' + t('app.name')}
+              value={newTenantName} onChange={(e) => setNewTenantName(e.target.value)} />
+          </Modal>
         </div>
       }
     </Layout>

@@ -1,4 +1,4 @@
-import { BankOutlined, PieChartOutlined } from '@ant-design/icons';
+import { BankOutlined, PieChartOutlined, TeamOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,11 @@ const SettingsList: React.FC = () => {
               label: t('app.budget'),
               icon: <PieChartOutlined />,
               onClick: () => { navigate(`/tenants/${tenantId}/settings/budget`) }
+            }, {
+              key: 'tenant',
+              label: t('app.tenant'),
+              icon: <TeamOutlined />,
+              onClick: () => { navigate(`/tenants/${tenantId}/settings/tenant`) }
             }
           ]
         }

@@ -1,15 +1,16 @@
 import { createBrowserRouter } from "react-router-dom";
-import AccountSettings from "./pages/settings/accounts/AccountSettings";
-import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
-import App from "./pages/App";
 import AppLayout from "./common/AppLayout";
+import App from "./pages/App";
 import BudgetPage from "./pages/budget/BudgetPage";
-import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
-import CategorySettings from "./pages/settings/budget/CategorySettings";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ErrorPage from "./pages/ErrorPage";
 import RedirectToPage from "./pages/RedirectToPage";
+import AccountSettings from "./pages/settings/accounts/AccountSettings";
+import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
+import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
+import CategorySettings from "./pages/settings/budget/CategorySettings";
 import SettingsPage from "./pages/settings/SettingsPage";
+import TenantSettings from "./pages/settings/tenant/TenantSettings";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
 
 const router = createBrowserRouter([
@@ -62,6 +63,9 @@ const router = createBrowserRouter([
                     element: <CategorySettings />
                   }
                 ]
+              }, {
+                path: 'tenant',
+                element: <TenantSettings />,
               }
             ]
           }, {

@@ -1,17 +1,17 @@
-import { Q } from '@nozbe/watermelondb';
-import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
-import { Card, Statistic, Tooltip } from 'antd';
-import { useTranslation } from 'react-i18next';
-import { withObservables } from '@nozbe/watermelondb/react';
-import Account from '../../../db/models/Account';
-import React, { useEffect } from 'react';
-import TableName from '../../../db/TableName';
-import moment from 'moment';
-import { antColors, dateTimeFormat, moneyFormat } from '../../../constants';
-import { Link, useParams } from 'react-router-dom';
-import { pickRandomByHash } from '../../../utils/Common';
 import { SwapOutlined } from '@ant-design/icons';
+import { Q } from '@nozbe/watermelondb';
+import { withObservables } from '@nozbe/watermelondb/react';
+import { Card, Statistic, Tooltip, Typography } from 'antd';
+import moment from 'moment';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Link, useParams } from 'react-router-dom';
+import { antColors, dateTimeFormat, moneyFormat } from '../../../constants';
 import database from '../../../db/database';
+import Account from '../../../db/models/Account';
+import TableName from '../../../db/TableName';
+import { pickRandomByHash } from '../../../utils/Common';
+import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
 
 interface AccountBalancesProps {
   accounts: Array<Account>;
@@ -19,6 +19,7 @@ interface AccountBalancesProps {
 
 const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
 
+  const { Text } = Typography;
   const { tenantId } = useParams();
   const { t } = useTranslation();
   const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
@@ -38,8 +39,9 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
     const hoverColor = `var(--ant-${pickRandomByHash(account.name, antColors)}-6)`;
 
     return <Link to={`/tenants/${tenantId}/transactions/${account.id}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <Card key={account.id} className='min-w-36' style={{ backgroundColor: hover ? hoverColor : backgroundColor, transition: 'background-color 0.2s' }} hoverable={true}>
-        <Statistic title={account.name} value={moneyFormat.format(balanceMap.get(account)?.balance ?? 0)} />
+      <Card key={account.id} style={{ backgroundColor: hover ? hoverColor : backgroundColor, transition: 'background-color 0.2s' }} hoverable={true}>
+        <Statistic className='w-36' title={<Tooltip title={account.name}><Text ellipsis={true}>{account.name}</Text></Tooltip>}
+          value={moneyFormat.format(balanceMap.get(account)?.balance ?? 0)} />
         <div className='flex flex-row items-start justify-between' style={{ color: 'var(--ant-color-text-description)' }}>
           <span className='text-xs'>
             <Tooltip title={dateTimeFormat.format(balanceMap.get(account)?.lastUpdate)}>
@@ -55,7 +57,7 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
   }
 
   return (
-    <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '28rem' }}>
+    <div className='rounded-lg p-2 w-96' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
       <div className='text-xl font-semibold mb-2'>{t('app.currentBalance')}</div>
       <div className='flex flex-wrap gap-2 items-center justify-center'>
         {accounts.map(account => <AccountCard key={account.id} account={account} />)}

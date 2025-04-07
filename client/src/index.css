@@ -50,6 +50,13 @@ svg {
   width: 85vw;
 }
 
+.ant-statistic-content-value {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
 /***************** AG Grid Overrides ****************/
 
 .ag-header {

@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react';
-import SettingsList from './SettingsList';
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { unsubscribeAll } from '../../utils/ComponentUtils';
 import { subscribeTo } from '../../utils/GlobalVariable';
+import SettingsList from './SettingsList';
 
 const SettingsPage: React.FC = () => {
 
-  const pageUrl = '/settings';
   const location = useLocation();
   const navigate = useNavigate();
   const { tenantId } = useParams();
+  const pageUrl = `/tenants/${tenantId}/settings`;
   const [isPortrait, setIsPortrait] = React.useState(true);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const SettingsPage: React.FC = () => {
     return unsubscribeAll(screenSubscription);
   }, [isPortrait, location.pathname, navigate]);
 
-  if (!isPortrait && location.pathname === `/tenants/${tenantId}/settings`) {
+  if (!isPortrait && location.pathname === pageUrl) {
     navigate(`/tenants/${tenantId}/settings/accounts`);
   }
 

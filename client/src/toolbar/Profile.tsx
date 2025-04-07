@@ -1,12 +1,13 @@
-import { Dropdown, Avatar, MenuProps, Badge } from "antd";
+import { DownloadOutlined, LogoutOutlined, SwapOutlined, SyncOutlined } from "@ant-design/icons";
+import { Badge, Dropdown, MenuProps } from "antd";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { logoutUrl } from "../constants";
-import { DownloadOutlined, LogoutOutlined, SwapOutlined, SyncOutlined } from "@ant-design/icons";
-import { BeforeInstallPromptEvent } from "../utils/BeforeInstallPromptEvent";
-import { User } from "../services/entities/User";
-import syncManager from "../db/sync-manager";
 import { useNavigate, useParams } from "react-router-dom";
+import UserProfile from "../common/UserProfile";
+import { logoutUrl } from "../constants";
+import syncManager from "../db/sync-manager";
+import { User } from "../services/entities/User";
+import { BeforeInstallPromptEvent } from "../utils/BeforeInstallPromptEvent";
 
 interface ProfileProps {
   user: User
@@ -17,7 +18,6 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
   const { t } = useTranslation();
   const { tenantId } = useParams();
   const navigate = useNavigate();
-  const [profileImageError, setProfileImageError] = useState<boolean>(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -73,9 +73,7 @@ const Profile: React.FC<ProfileProps> = ({ user }) => {
     <div className="flex items-center h-full cursor-pointer">
       <Dropdown trigger={['click']} menu={profileOptions}>
         <Badge dot={installPrompt != null}>
-          <Avatar src={!profileImageError &&
-            <img src={user?.picture} alt="avatar" onError={() => setProfileImageError(true)} />
-          } size="default" style={{ backgroundColor: 'var(--ant-blue)' }}>{user?.name.charAt(0)}</Avatar>
+          <UserProfile name={user?.name} profileImage={user?.picture} color="var(--ant-blue)" />
         </Badge>
       </Dropdown>
     </div>

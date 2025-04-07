@@ -1,5 +1,5 @@
-import i18next from "i18next"
-import { initReactI18next } from "react-i18next"
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
 
 const resources = {
   en: {
@@ -27,6 +27,7 @@ const resources = {
       'app.detectedFormat': 'Detected format',
       'app.detectingFormat': 'Detecting type of the file...',
       'app.edit': 'Edit',
+      'app.email': 'Email',
       'app.errorPage': 'Ye ErrorPage hai bhai! 😱 Kya kar diya!',
       'app.failedLogin': 'Failed to verify your credentials. Click on the Home button to retry.',
       'app.formatNotDetected': 'Format not detected. Pick one from below.',
@@ -45,6 +46,7 @@ const resources = {
       'app.logout': 'Logout',
       'app.monthly': 'Monthly',
       'app.myAccount': 'My Account',
+      'app.name': 'Name',
       'app.needs': 'Needs',
       'app.new': 'New',
       'app.no': 'No',
@@ -52,6 +54,7 @@ const resources = {
       'app.none': 'None',
       'app.percentage': 'Percentage',
       'app.readingTransactions': 'Reading transactions',
+      'app.remove': 'Remove',
       'app.save': 'Save',
       'app.savings': 'Savings',
       'app.search': 'Search',
@@ -62,15 +65,19 @@ const resources = {
       'app.switchHousehold': 'Switch Household',
       'app.sync': 'Sync',
       'app.syncing': 'Syncing recent changes from the server.',
+      'app.tenant': 'Household',
       'app.time': 'Time',
       'app.title': 'Title',
       'app.topSpends': 'Top Spends',
+      'app.total': 'Total',
       'app.totalSpent': 'Total Spent',
       'app.transactions': 'Transactions',
       'app.transactionsImported': 'transactions imported',
       'app.unknown': '🫤',
       'app.uploadHint': 'Supports upload of single file only',
       'app.uploadText': 'Click or drag file to this area to upload',
+      'app.user': 'User',
+      'app.users': 'Users',
       'app.wants': 'Wants',
       'app.withdraw': 'Withdraw',
       'app.yearly': 'Yearly',
