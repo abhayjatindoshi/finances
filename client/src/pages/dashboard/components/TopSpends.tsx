@@ -1,8 +1,8 @@
-import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
-import { useTranslation } from 'react-i18next';
-import React, { useEffect } from 'react';
 import { Progress } from 'antd';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
 
 const TopSpends: React.FC = () => {
 
@@ -33,7 +33,7 @@ const TopSpends: React.FC = () => {
     <div className='rounded-lg p-2' style={{ backgroundColor: 'var(--ant-color-bg-container)', width: '26rem' }}>
       <div className='text-xl font-semibold mb-2'>{t('app.topSpends')}</div>
       <div className='flex flex-wrap items-center justify-center gap-4'>
-        {data.slice(0, 5).map(row => (
+        {data.filter(row => row.yearlyLimit > 0).slice(0, 5).map(row => (
           <DashbordProgess key={row.category.id} percentage={row.budgetPercentage} name={row.category.name} />
         ))}
       </div>

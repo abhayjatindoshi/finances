@@ -1,15 +1,16 @@
+import { DonutChart, DonutChartProps } from '@fluentui/react-charts';
 import { Q } from '@nozbe/watermelondb';
 import { withObservables } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
-import TableName from '../../../db/TableName';
-import Category from '../../../db/models/Category';
-import Transaction from '../../../db/models/Transaction';
-import SubCategory from '../../../db/models/SubCategory';
-import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
-import { AgCharts } from "ag-charts-react";
-import { AgChartOptions } from 'ag-charts-community';
-import database from '../../../db/database';
 import { useParams } from 'react-router-dom';
+import { antColors } from '../../../constants';
+import TableName from '../../../db/TableName';
+import database from '../../../db/database';
+import Category from '../../../db/models/Category';
+import SubCategory from '../../../db/models/SubCategory';
+import Transaction from '../../../db/models/Transaction';
+import { pickRandomByHash } from '../../../utils/Common';
+import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
 
 
 const TransactionsPie: React.FC = () => {
@@ -26,27 +27,34 @@ const TransactionsPie: React.FC = () => {
     fetchData();
   }, [setData, tenantId]);
 
-  const chartOptions: AgChartOptions = {
-    theme: 'ag-default-dark',
-    legend: {
-      enabled: false,
+  const total = data.reduce((total, d) => total + -d.total, 0);
+  const average = total / data.length / 1.5;
+  const otherData = data.filter(d => -d.total < average)
+    .reduce((otherData, d) => ({
+      total: otherData.total + d.total,
+      category: {
+        name: [...otherData.category.name, d.category.name]
+      }
+    }), { total: 0, category: { name: new Array<string>() } });
+
+  const chartData: DonutChartProps = {
+    data: {
+      chartData: [...data.filter(d => -d.total > average), {...otherData, category: {name: otherData.category.name.join(',')}}].map(d => ({
+        legend: d.category.name,
+        data: -d.total.toFixed(2),
+        color: `var(--ant-${pickRandomByHash(d.category.name, antColors)})`,
+      })),
     },
-    background: {
-      fill: 'rgba(0,0,0,0)',
-    },
-    data: data.map(d => ({ category: d.category.name, total: -d.total.toFixed(2), percentage: `${d.budgetPercentage}%` })),
-    series: [{
-      type: 'pie',
-      angleKey: 'total',
-      legendItemKey: 'category',
-      sectorLabelKey: 'percentage',
-      sectorSpacing: 0,
-    }],
+    showLabelsInPercent: true,
+    hideLabels: false,
+    innerRadius: 50,
+    height: 300,
+    width: 300,
   }
 
   return (
     <div className='rounded-lg p-4' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
-      <AgCharts options={chartOptions} />
+      <DonutChart {...chartData} />
     </div>
   );
 };

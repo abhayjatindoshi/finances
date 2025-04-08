@@ -1,3 +1,4 @@
+import { tokens } from "@fluentui/react-components";
 import { theme } from "antd";
 
 export const antTheme = {
@@ -18,6 +19,21 @@ export const antTheme = {
 
 export const syncTimeout = 20 * 1000; // 20 seconds
 export const antColors = ['blue', 'purple', 'cyan', 'green', 'magenta', 'pink', 'red', 'orange', 'yellow', 'volcano', 'geekblue', 'gold', 'lime'];
+export const fluentColors = [
+  tokens.colorBrandBackground, 
+  tokens.colorPalettePurpleBackground2,
+  tokens.colorPaletteTealBackground2,
+  tokens.colorPaletteGreenBackground2,
+  tokens.colorPaletteCranberryBackground2,
+  tokens.colorPalettePinkBackground2,
+  tokens.colorPaletteRedBackground2,
+  tokens.colorPaletteDarkOrangeBackground2,
+  tokens.colorPaletteYellowBackground2,
+  tokens.colorPaletteDarkRedBackground2,
+  tokens.colorPaletteCornflowerBackground2,
+  tokens.colorPaletteGoldBackground2,
+  tokens.colorPaletteSeafoamBackground2]
+
 
 export const dateTimeFormat = Intl.DateTimeFormat('en-IN', { dateStyle: 'medium' });
 export const moneyFormat = Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
