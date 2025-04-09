@@ -1,4 +1,4 @@
-import { DonutChart, DonutChartProps } from '@fluentui/react-charts';
+import { ChartDataPoint, DonutChart, DonutChartProps } from '@fluentui/react-charts';
 import { Q } from '@nozbe/watermelondb';
 import { withObservables } from '@nozbe/watermelondb/react';
 import React, { useEffect } from 'react';
@@ -27,23 +27,34 @@ const TransactionsPie: React.FC = () => {
     fetchData();
   }, [setData, tenantId]);
 
-  const total = data.reduce((total, d) => total + -d.total, 0);
-  const average = total / data.length / 1.5;
-  const otherData = data.filter(d => -d.total < average)
-    .reduce((otherData, d) => ({
-      total: otherData.total + d.total,
-      category: {
-        name: [...otherData.category.name, d.category.name]
-      }
-    }), { total: 0, category: { name: new Array<string>() } });
+  let chartData = new Array<ChartDataPoint>();
+  if (data.length < 8) {
+    chartData = data.map(d => ({
+      legend: d.category.name,
+      data: -d.total,
+      color: `var(--ant-${pickRandomByHash(d.category.name, antColors)})`,
+    }));
+  } else {
+    const total = data.reduce((total, d) => total + -d.total, 0);
+    const average = total / data.length / 1.5;
+    const otherData = data.filter(d => -d.total < average)
+      .reduce((otherData, d) => ({
+        total: otherData.total + d.total,
+        category: {
+          name: [...otherData.category.name, d.category.name]
+        }
+      }), { total: 0, category: { name: new Array<string>() } });
 
-  const chartData: DonutChartProps = {
+    chartData = [...data.filter(d => -d.total > average), { ...otherData, category: { name: otherData.category.name.join(',') } }].map(d => ({
+      legend: d.category.name,
+      data: -d.total,
+      color: `var(--ant-${pickRandomByHash(d.category.name, antColors)})`,
+    }));
+  }
+
+  const chartDataProps: DonutChartProps = {
     data: {
-      chartData: [...data.filter(d => -d.total > average), {...otherData, category: {name: otherData.category.name.join(',')}}].map(d => ({
-        legend: d.category.name,
-        data: -d.total.toFixed(2),
-        color: `var(--ant-${pickRandomByHash(d.category.name, antColors)})`,
-      })),
+      chartData: chartData
     },
     showLabelsInPercent: true,
     hideLabels: false,
@@ -54,7 +65,7 @@ const TransactionsPie: React.FC = () => {
 
   return (
     <div className='rounded-lg p-4' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
-      <DonutChart {...chartData} />
+      <DonutChart {...chartDataProps} />
     </div>
   );
 };
