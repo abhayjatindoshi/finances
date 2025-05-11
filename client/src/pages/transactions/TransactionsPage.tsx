@@ -1,37 +1,39 @@
-import { AgGridReact } from 'ag-grid-react';
-import { antColors, dateTimeFormat, moneyFormat } from '../../constants';
-import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
-import { Avatar, Drawer, Dropdown, Input, Popconfirm } from 'antd';
 import { CloseCircleOutlined, DeleteOutlined, DownloadOutlined, DownOutlined, SearchOutlined } from '@ant-design/icons';
-import { ColDef, AllCommunityModule, ModuleRegistry, colorSchemeDark, themeAlpine, CellEditRequestEvent } from 'ag-grid-community';
-import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
-import { pickRandomByHash } from '../../utils/Common';
 import { Q } from '@nozbe/watermelondb';
-import { unsubscribeAll, useForceUpdate } from '../../utils/ComponentUtils';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { withObservables } from '@nozbe/watermelondb/react';
-import Account from '../../db/models/Account';
-import database from '../../db/database';
-import IconButton from '../../common/IconButton';
-import ImportPage from './import/ImportPage';
-import Money from '../../common/Money';
+import { AutocompleteSelectCellEditor } from 'ag-grid-autocomplete-editor';
+import { AllCommunityModule, CellEditRequestEvent, ColDef, colorSchemeDark, ModuleRegistry, themeAlpine } from 'ag-grid-community';
+import { AgGridReact } from 'ag-grid-react';
+import { Avatar, Drawer, Dropdown, Input, Popconfirm } from 'antd';
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import IconButton from '../../common/IconButton';
+import Money from '../../common/Money';
+import { antColors, dateTimeFormat, moneyFormat } from '../../constants';
+import database from '../../db/database';
+import Account from '../../db/models/Account';
+import Category from '../../db/models/Category';
 import SubCategory from '../../db/models/SubCategory';
-import TableName from '../../db/TableName';
 import Transaction from '../../db/models/Transaction';
+import TableName from '../../db/TableName';
+import { pickRandomByHash } from '../../utils/Common';
+import { unsubscribeAll, useForceUpdate } from '../../utils/ComponentUtils';
 import { subscribeTo } from '../../utils/GlobalVariable';
+import { convertToTransactionRows, TransactionRow, updateTransactionRow } from '../../utils/TransactionHelpers';
+import ImportPage from './import/ImportPage';
 
 // Register all Community features
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 interface TransactionsPageProps {
   accounts: Array<Account>;
+  categories: Array<Category>;
   subCategories: Array<SubCategory>;
   transactions: Array<Transaction>;
 }
 
-const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCategories, transactions }) => {
+const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, categories, subCategories, transactions }) => {
 
   const all = 'all';
   const { t } = useTranslation();
@@ -78,7 +80,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
   }
   const classificationOptions = [...subCategories.map(s => ({
     value: JSON.stringify({ subCategoryId: s.id }),
-    label: s.name
+    label: s.name + " • " + categories.find(c => c.id === s.category.id)?.name
   })), ...accounts.map(a => ({
     value: JSON.stringify({ transferAccountId: a.id }),
     label: a.name
@@ -92,17 +94,20 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
     </div>
   }
 
-  const SubCategoryRenderer = ({ subCategory }: { subCategory: SubCategory | undefined }) => {
+  const SubCategoryRenderer = ({ subCategory, category }: { subCategory: SubCategory | undefined, category: Category | undefined }) => {
     if (!subCategory) return <></>
-    return <div className='flex flex-row items-center gap-2'>
+    return <div className='flex flex-row items-center gap-1'>
       <Avatar size={'small'} shape='circle' style={{ backgroundColor: `var(--ant-${pickRandomByHash(subCategory.name, antColors)}-6)` }} >{subCategory.name.charAt(0).toUpperCase()}</Avatar>
       {subCategory.name}
+      <span className='text-xs' style={{ color: 'var(--ant-color-text-description)' }}>• {category?.name}</span>
     </div>
   }
 
   const ClassificationRenderer = ({ transaction }: { transaction: Transaction }) => {
     if (transaction.subCategory?.id) {
-      return <SubCategoryRenderer subCategory={subCategories.find(s => s.id === transaction.subCategory?.id)} />
+      const subCategory = subCategories.find(s => s.id === transaction.subCategory?.id);
+      const category = categories.find(c => c.id === subCategory?.category.id);
+      return <SubCategoryRenderer subCategory={subCategory} category={category} />
     }
     if (transaction.transferAccount?.id) {
       return <AccountRenderer account={accounts.find(a => a.id === transaction.transferAccount?.id)} />
@@ -279,6 +284,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, subCatego
 
 const enhance = withObservables(['tenantId'], ({ tenantId }) => ({
   accounts: database(tenantId).collections.get<Account>(TableName.Accounts).query(),
+  categories: database(tenantId).collections.get<Category>(TableName.Categories).query(),
   subCategories: database(tenantId).collections.get<SubCategory>(TableName.SubCategories).query(),
   transactions: database(tenantId).collections.get<Transaction>(TableName.Transactions).query(Q.sortBy('transaction_at'))
 }));
