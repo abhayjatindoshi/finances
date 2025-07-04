@@ -1,15 +1,15 @@
-import { Collapse, CollapseProps, DatePicker, List, Typography } from 'antd';
 import { withObservables } from '@nozbe/watermelondb/react';
-import Category from '../../../db/models/Category';
-import Money from '../../../common/Money';
-import React from 'react';
-import SubCategory from '../../../db/models/SubCategory';
-import TableName from '../../../db/TableName';
-import Tranasction from '../../../db/models/Transaction';
-import moment from 'moment';
+import { Collapse, CollapseProps, DatePicker, List, Typography } from 'antd';
 import dayjs from 'dayjs';
-import database from '../../../db/database';
+import moment from 'moment';
+import React from 'react';
 import { useParams } from 'react-router-dom';
+import Money from '../../../common/Money';
+import database from '../../../db/database';
+import Category from '../../../db/models/Category';
+import SubCategory from '../../../db/models/SubCategory';
+import Tranasction from '../../../db/models/Transaction';
+import TableName from '../../../db/TableName';
 
 interface MonthlyCategoryCostProps {
   transactions: Array<Tranasction>;
@@ -19,9 +19,25 @@ interface MonthlyCategoryCostProps {
 
 const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions, subCategories, categories }) => {
 
+  const findStartDate = (): Date => {
+    const firstTransaction = transactions.sort((a, b) => a.transactionAt.getTime() - b.transactionAt.getTime())[0];
+    if (firstTransaction) {
+      return new Date(firstTransaction.transactionAt.getFullYear(), firstTransaction.transactionAt.getMonth(), 1);
+    }
+    return new Date();
+  }
+
+  const findEndDate = (): Date => {
+    const lastTransaction = transactions.sort((a, b) => b.transactionAt.getTime() - a.transactionAt.getTime())[0];
+    if (lastTransaction) {
+      return new Date(lastTransaction.transactionAt.getFullYear(), lastTransaction.transactionAt.getMonth() + 1, 0);
+    }
+    return new Date();
+  }
+
   const { RangePicker } = DatePicker;
-  const [startDate, setStartDate] = React.useState(moment().subtract(1, 'month').startOf('month').toDate());
-  const [endDate, setEndDate] = React.useState(moment().subtract(1, 'month').endOf('month').toDate());
+  const [startDate, setStartDate] = React.useState(findStartDate());
+  const [endDate, setEndDate] = React.useState(findEndDate());
 
   const categoryMap = categories.reduce((map, category) => {
     map.set(category.id, category);

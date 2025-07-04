@@ -89,7 +89,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, categorie
   const AccountRenderer = ({ account }: { account: Account | undefined }) => {
     if (!account) return <></>
     return <div className='flex flex-row items-center gap-2'>
-      <Avatar size={'small'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account.name, antColors)}-6)` }} >{account.name.charAt(0).toUpperCase()}</Avatar>
+      <Avatar className='min-w-5' size={'small'} shape='square' style={{ backgroundColor: `var(--ant-${pickRandomByHash(account.name, antColors)}-6)` }} >{account.name.charAt(0).toUpperCase()}</Avatar>
       {account.name}
     </div>
   }
@@ -97,7 +97,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ accounts, categorie
   const SubCategoryRenderer = ({ subCategory, category }: { subCategory: SubCategory | undefined, category: Category | undefined }) => {
     if (!subCategory) return <></>
     return <div className='flex flex-row items-center gap-1'>
-      <Avatar size={'small'} shape='circle' style={{ backgroundColor: `var(--ant-${pickRandomByHash(subCategory.name, antColors)}-6)` }} >{subCategory.name.charAt(0).toUpperCase()}</Avatar>
+      <Avatar className='min-w-5' size={'small'} shape='circle' style={{ backgroundColor: `var(--ant-${pickRandomByHash(subCategory.name, antColors)}-6)` }} >{subCategory.name.charAt(0).toUpperCase()}</Avatar>
       {subCategory.name}
       <span className='text-xs' style={{ color: 'var(--ant-color-text-description)' }}>• {category?.name}</span>
     </div>

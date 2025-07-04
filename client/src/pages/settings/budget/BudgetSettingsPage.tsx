@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import CategorySettingsList from './CategorySettingsList';
+import { Outlet, useLocation, useParams } from 'react-router-dom';
 import { unsubscribeAll } from '../../../utils/ComponentUtils';
 import { subscribeTo } from '../../../utils/GlobalVariable';
+import CategorySettingsList from './CategorySettingsList';
 
 const BudgetSettingsPage: React.FC = () => {
 
-  const pageUrl = '/settings/budget';
+  const { tenantId } = useParams();
+  const pageUrl = `/tenants/${tenantId}/settings/budget`;
   const location = useLocation();
   const [isPortrait, setIsPortrait] = React.useState<boolean>(false);
   const listClass = isPortrait ? 'w-full' : 'w-96';

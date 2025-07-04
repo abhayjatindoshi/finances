@@ -1,5 +1,5 @@
-import Transaction from "../db/models/Transaction";
 import database from "../db/database";
+import Transaction from "../db/models/Transaction";
 
 export interface TransactionRow {
   selected: boolean;
