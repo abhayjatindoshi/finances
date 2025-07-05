@@ -7,10 +7,11 @@ on:
   push:
     branches:
       - main
+      - cursor-ai
   workflow_dispatch:
 
 jobs:
-  build:
+  build-server:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,43 +25,134 @@ jobs:
       - name: Cleanup dist folder
         run: rm -rf dist
 
-      - name: Build client
+      - name: Build server
+        run: |
+          npm install
+          npm run build --if-present
+          cp package.json package-lock.json dist/
+
+      - name: Upload server artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build
+          path: dist
+
+  build-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      
+      - name: Build main client
         run: |
           cd client
           npm install
           npm run build --if-present
 
-      - name: Build server
-        run: |
-          npm install
-          npm run build --if-present
-
-      - name: Zip artifact for deployment
-        run: |
-          mv client/build dist/static
-          zip release.zip ./dist package.json package-lock.json -r
-
-      - name: Upload artifact for deployment job
+      - name: Upload main client artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
+          name: main-client
+          path: client/build
+
+  build-cursor-ai:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: cursor-ai
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      
+      - name: Build cursor-ai client
+        run: |
+          cd client
+          npm install
+          PUBLIC_URL=/new npm run build --if-present
+
+      - name: Upload cursor-ai client artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cursor-ai-client
+          path: client/build
+
+  organize-files:
+    runs-on: ubuntu-latest
+    needs: [build-server, build-main, build-cursor-ai]
+
+    steps:
+      - name: Download server artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build
+          path: dist
+
+      - name: Download main client artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: main-client
+          path: main-static
+
+      - name: Download cursor-ai client artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cursor-ai-client
+          path: cursor-ai-static
+
+      - name: Organize deployment files
+        run: |
+          # Create static directory structure
+          mkdir -p dist/static
+          mkdir -p dist/static/new
+          
+          # Move main client files to static root
+          if [ -d "main-static" ]; then
+            cp -r main-static/* dist/static/
+          fi
+          
+          # Move cursor-ai client files to static/new
+          if [ -d "cursor-ai-static" ]; then
+            cp -r cursor-ai-static/* dist/static/new/
+          fi
+          
+          # Create zip file with dist folder (includes package.json)
+          zip release.zip ./dist -r
+
+      - name: Upload organized deployment
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-package
           path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: organize-files
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
+      - name: Download deployment package
         uses: actions/download-artifact@v4
         with:
-          name: node-app
+          name: deployment-package
 
-      - name: Unzip artifact for deployment
+      - name: Unzip deployment package
         run: unzip release.zip
+
+      - name: Move package files to root
+        run: mv dist/package.json dist/package-lock.json ./
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp

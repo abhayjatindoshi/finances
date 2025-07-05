@@ -1,8 +1,7 @@
-import { Button, Tooltip } from 'antd';
-import { ButtonProps } from 'antd/es/button';
+import { Button, ButtonProps, Tooltip } from '@fluentui/react-components';
 import React, { ReactNode, useEffect, useState } from 'react';
-import { subscribeTo } from '../utils/GlobalVariable';
 import { unsubscribeAll } from '../utils/ComponentUtils';
+import { subscribeTo } from '../utils/GlobalVariable';
 
 type IconButtonProps = ButtonProps & {
   icon: ReactNode,
@@ -21,7 +20,7 @@ const IconButton: React.FC<IconButtonProps> = (props: IconButtonProps) => {
 
   if (props.tooltip) {
     return (
-      <Tooltip title={props.tooltip}>
+      <Tooltip content={props.tooltip} relationship="label">
         <Button {...props}>
           {showContent && props.children}
         </Button>
