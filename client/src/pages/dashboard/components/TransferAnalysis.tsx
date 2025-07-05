@@ -1,4 +1,4 @@
-import { ArrowDownOutlined, ArrowUpOutlined, CheckCircleOutlined, CloseCircleOutlined, RightOutlined } from '@ant-design/icons';
+import { ArrowDownRegular, ArrowUpRegular, CheckmarkCircleRegular, ChevronRightRegular, DismissCircleRegular } from '@fluentui/react-icons';
 import { withObservables } from '@nozbe/watermelondb/react';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -82,18 +82,18 @@ const TransferAnalysis: React.FC<TransferAnalysisProps> = ({ accounts, transacti
             {rows.filter(r => r.total < 0).map(row => (
               <tr key={`${row.fromAccount.id}-${row.toAccount.id}`}>
                 <td>{row.fromAccount.name}</td>
-                <td><RightOutlined className='mx-4' /></td>
+                <td><ChevronRightRegular className='mx-4' /></td>
                 <td>{row.toAccount.name}</td>
                 <td>
                   <div className='flex flex-row items-center gap-2 m-2'>
                     <div className='text-2xl'>{moneyFormat.format(-row.total)}</div>
                     <div className='flex flex-col'>
-                      {row.deposit !== 0 && <div className='text-xs text-green-400'><ArrowDownOutlined />{moneyFormat.format(row.deposit)}</div>}
-                      {row.withdraw !== 0 && <div className='text-xs text-red-400'><ArrowUpOutlined /> {moneyFormat.format(-row.withdraw)}</div>}
+                      {row.deposit !== 0 && <div className='text-xs text-green-400'><ArrowDownRegular />{moneyFormat.format(row.deposit)}</div>}
+                      {row.withdraw !== 0 && <div className='text-xs text-red-400'><ArrowUpRegular /> {moneyFormat.format(-row.withdraw)}</div>}
                     </div>
                   </div>
                 </td>
-                <td>{verify(row) ? <CheckCircleOutlined className='text-green-400 mx-2' /> : <CloseCircleOutlined className='text-red-400 mx-2' />}</td>
+                <td>{verify(row) ? <CheckmarkCircleRegular className='text-green-400 mx-2' /> : <DismissCircleRegular className='text-red-400 mx-2' />}</td>
                 <td>
                   {!verify(row) && getOppositeRow(row) && moneyFormat.format(-row.total - (getOppositeRow(row)?.total ?? 0))}
                 </td>

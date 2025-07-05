@@ -1,5 +1,5 @@
+import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, Input, Text } from '@fluentui/react-components';
 import { withObservables } from '@nozbe/watermelondb/react';
-import { Collapse, CollapseProps, DatePicker, List, Typography } from 'antd';
 import dayjs from 'dayjs';
 import moment from 'moment';
 import React from 'react';
@@ -35,7 +35,6 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
     return new Date();
   }
 
-  const { RangePicker } = DatePicker;
   const [startDate, setStartDate] = React.useState(findStartDate());
   const [endDate, setEndDate] = React.useState(findEndDate());
 
@@ -68,7 +67,7 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
     return map;
   }, new Map<string, number>());
 
-  const accordionData: CollapseProps['items'] = Array.from(costPerCategory.entries())
+  const accordionData = Array.from(costPerCategory.entries())
     .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
     .map(([categoryId, cost]) => {
       const category = categoryMap.get(categoryId);
@@ -84,30 +83,46 @@ const MonthlyCategoryCost: React.FC<MonthlyCategoryCostProps> = ({ transactions,
       return {
         key: categoryId,
         label: <div className='flex place-content-between w-full'>
-          <Typography.Text>{category?.name}</Typography.Text>
+          <Text>{category?.name}</Text>
           <Money amount={Math.abs(cost)} />
         </div>,
-        children: <List size='small' dataSource={subCategoryVsCost} renderItem={({ name, cost }) => (
-          <List.Item>
-            <div className='flex flex-row items-center w-full'>
-              <Typography.Text className='grow text-lg' ellipsis={true}>{name}</Typography.Text>
-              <div className='text-sm text-nowrap'><Money amount={Math.abs(cost)} /></div>
-            </div>
-          </List.Item>
-        )} />
+        children: subCategoryVsCost.map(({ name, cost }) => (
+          <div key={name} className='flex flex-row items-center w-full p-2'>
+            <Text className='grow text-lg' truncate>{name}</Text>
+            <div className='text-sm text-nowrap'><Money amount={Math.abs(cost)} /></div>
+          </div>
+        ))
       }
     });
 
   return (
     <div className='rounded-lg p-2 w-96' style={{ backgroundColor: 'var(--ant-color-bg-container)' }}>
-      <RangePicker className='mb-2'
-        format="DD MMM YYYY"
-        value={[dayjs(startDate), dayjs(endDate)]}
-        onChange={(_, [start, end]) => {
-          if (start) setStartDate(moment(start).toDate());
-          if (end) setEndDate(moment(end).toDate());
-        }} />
-      <Collapse className='overflow-auto h-64' accordion items={accordionData} />
+      <div className='mb-2 flex gap-2'>
+        <Input 
+          type="date"
+          value={dayjs(startDate).format('YYYY-MM-DD')}
+          onChange={(e, data) => {
+            if (data.value) setStartDate(moment(data.value).toDate());
+          }}
+        />
+        <Input 
+          type="date"
+          value={dayjs(endDate).format('YYYY-MM-DD')}
+          onChange={(e, data) => {
+            if (data.value) setEndDate(moment(data.value).toDate());
+          }}
+        />
+      </div>
+      <Accordion className='overflow-auto h-64'>
+        {accordionData.map(item => (
+          <AccordionItem key={item.key} value={item.key}>
+            <AccordionHeader>{item.label}</AccordionHeader>
+            <AccordionPanel>
+              {item.children}
+            </AccordionPanel>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </div>
   );
 };

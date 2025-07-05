@@ -1,24 +1,21 @@
 import React, { useEffect } from 'react';
-import { createGlobalVariable } from '../utils/GlobalVariable';
+import { useTranslation } from 'react-i18next';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import Loading from '../common/Loading';
+import { loginUrl } from '../constants';
+import syncManager from '../db/sync-manager';
 import { User } from '../services/entities/User';
 import userService from '../services/user-service';
-import { loginUrl } from '../constants';
-import { Tenant } from '../services/entities/Tenant';
-import tenantService from '../services/tenant-service';
-import Loading from '../common/Loading';
-import { useTranslation } from 'react-i18next';
-import TenantsPage from './TenantsPage';
-import { Outlet, useParams } from 'react-router-dom';
-import syncManager from '../db/sync-manager';
+import { createGlobalVariable } from '../utils/GlobalVariable';
 
 const App: React.FC = () => {
 
   const { t } = useTranslation();
   const { tenantId } = useParams();
   const userSubject = createGlobalVariable<User>('user');
-  const [tenants, setTenants] = React.useState<Tenant[]>([]);
   const [loading, setLoading] = React.useState<boolean>(true);
   const [loadingTip, setLoadingTip] = React.useState<string>('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     async function loadUser() {
@@ -31,17 +28,10 @@ const App: React.FC = () => {
       }
     }
 
-    async function loadTenants() {
-      const tenants = await tenantService.fetchAllTenants();
-      setTenants(tenants);
-    }
-
     async function loadApp() {
       setLoading(true);
       setLoadingTip(t('app.loggingIn'));
       await loadUser()
-      setLoadingTip(t('app.loadingTenants'));
-      await loadTenants()
       setLoadingTip('');
       setLoading(false);
       syncManager.startAutoSync();
@@ -51,10 +41,15 @@ const App: React.FC = () => {
 
   }, [t, userSubject]);
 
+  useEffect(() => {
+    if (!tenantId && !loading) {
+      navigate('/tenants');
+    }
+  }, [tenantId, loading, navigate]);
+
   return <>
     {loading && <Loading loadingTip={loadingTip} />}
-    {!loading && !tenantId && <TenantsPage tenants={tenants} />}
-    {!loading && tenantId && <Outlet />}
+    {!loading && <Outlet />}
   </>;
 };
 

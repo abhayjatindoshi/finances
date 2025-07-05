@@ -1,38 +1,38 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { PlusOutlined, RightOutlined } from '@ant-design/icons';
-import { Input, Layout, Modal, Spin } from 'antd';
-import React from 'react';
+import { Button, Input, Spinner } from '@fluentui/react-components';
+import { AddRegular, ChevronRightRegular } from '@fluentui/react-icons';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { Dialog, DialogActions, DialogBody, DialogContent, DialogSurface, withDialogTheme } from '../common/Dialog';
 import IconButton from '../common/IconButton';
 import { Tenant } from '../services/entities/Tenant';
 import tenantService from '../services/tenant-service';
+import { tenantToFolders } from '../utils/TenantUtils';
 
-interface TenantsPageProps {
-  tenants: Tenant[];
-}
-
-const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
+const TenantsPage: React.FC = () => {
 
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [newTenantName, setNewTenantName] = React.useState('');
-  const [showNewTenantModal, setShowNewTenantModal] = React.useState(false);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newTenantName, setNewTenantName] = useState('');
+  const [showNewTenantModal, setShowNewTenantModal] = useState(false);
 
-  function tenantToFolders(tenants: Tenant[]): any {
-    const root: any = {};
-    tenants.forEach(tenant => {
-      const keys = tenant.name.split('.');
-      let currentLevel = root;
-      keys.forEach((key, index) => {
-        if (!currentLevel[key]) {
-          currentLevel[key] = index === keys.length - 1 ? tenant : {};
-        }
-        currentLevel = currentLevel[key];
-      });
-    });
-    return root;
-  }
+  useEffect(() => {
+    async function loadTenants() {
+      try {
+        const tenants = await tenantService.fetchAllTenants();
+        setTenants(tenants);
+      } catch (error) {
+        console.error('Failed to load tenants:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTenants();
+  }, []);
 
   const folders = tenantToFolders(tenants);
   const TenantFolders = ({ folders }: { folders: any }) => {
@@ -41,13 +41,29 @@ const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
       .map(([key, value]: [string, any]) => {
         if ('name' in value) {
           return <Link to={`/tenants/${value.id}`} key={value.id}
-            className='flex flex-row justify-between w-72 bg-zinc-900 hover:bg-zinc-800 p-3 ml-5 rounded'>
-            <div className=''>{key}</div>
-            <RightOutlined />
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              width: '20rem',
+              padding: '0.5rem',
+              backgroundColor: 'var(--colorNeutralBackground3)',
+              borderRadius: '0.5rem',
+              transition: 'background-color 0.2s',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--colorNeutralBackground2)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--colorNeutralBackground3)';
+            }}>
+            <div>{key}</div>
+            <ChevronRightRegular />
           </Link>
         } else {
-          return <div className='ml-10' key={key}>
-            <div className='text-2xl m-2'>{key}</div>
+          return <div className='mb-4' key={key}>
+            <div className='text-2xl m-2 font-semibold'>{key}</div>
             <div className='flex flex-col gap-2'>
               <TenantFolders folders={value} />
             </div>
@@ -60,29 +76,50 @@ const TenantsPage: React.FC<TenantsPageProps> = ({ tenants }) => {
   const createTenant = async () => {
     const tenant = await tenantService.createTenant(newTenantName);
     navigate(`/tenants/${tenant.id}/settings/tenant`);
+    setShowNewTenantModal(false);
   }
 
   return (
-    <Layout>
-      {tenants.length === 0 ?
+    <div className="min-h-screen">
+      {loading ?
         <div className='flex flex-col gap-2 h-screen items-center justify-center'>
-          <Spin percent="auto" size='large' />
-          <div className='text-xl'>{t('app.loggingIn')}</div>
+          <Spinner size="large" />
+          <div className='text-xl'>{t('app.loadingTenants')}</div>
         </div> :
-        <div className="flex flex-col items-start mt-24 mx-auto overflow-auto">
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <div className="flex flex-col items-center overflow-auto">
           <TenantFolders folders={folders} />
-          <IconButton className='mt-5 ml-10' icon={<PlusOutlined />} onClick={() => setShowNewTenantModal(true)}>
+            <IconButton className='mt-6' icon={<AddRegular />} onClick={() => setShowNewTenantModal(true)}>
             {t('app.new')}
           </IconButton>
-          <Modal open={showNewTenantModal} title={t('app.new') + ' ' + t('app.tenant')}
-            onCancel={() => setShowNewTenantModal(false)}
-            onOk={createTenant}>
-            <Input placeholder={t('app.tenant') + ' ' + t('app.name')}
-              value={newTenantName} onChange={(e) => setNewTenantName(e.target.value)} />
-          </Modal>
+          </div>
+          {withDialogTheme(
+            <Dialog open={showNewTenantModal} onOpenChange={(e, data) => setShowNewTenantModal(data.open)}>
+              <DialogSurface>
+                <DialogBody>
+                  <DialogContent>
+                    <h2 className="text-xl font-semibold mb-4">{t('app.new')} {t('app.tenant')}</h2>
+                    <Input 
+                      placeholder={t('app.tenant') + ' ' + t('app.name')}
+                      value={newTenantName} 
+                      onChange={(e, data) => setNewTenantName(data.value)} 
+                    />
+                  </DialogContent>
+                  <DialogActions>
+                    <Button appearance="subtle" onClick={() => setShowNewTenantModal(false)}>
+                      {t('app.cancel')}
+                    </Button>
+                    <Button appearance="primary" onClick={createTenant}>
+                      {t('app.create')}
+                    </Button>
+                  </DialogActions>
+                </DialogBody>
+              </DialogSurface>
+            </Dialog>
+          )}
         </div>
       }
-    </Layout>
+    </div>
   );
 };
 

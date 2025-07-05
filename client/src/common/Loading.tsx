@@ -1,4 +1,4 @@
-import { Spin } from 'antd';
+import { Spinner } from '@fluentui/react-components';
 import React from 'react';
 
 interface LoadingProps {
@@ -9,7 +9,7 @@ const Loading: React.FC<LoadingProps> = ({ loadingTip }) => {
 
   return (
     <div className='absolute h-screen w-screen flex flex-col gap-2 items-center justify-center'>
-      <Spin percent="auto" size='large' />
+      <Spinner size="large" />
       <div className='text-xl'>{loadingTip}</div>
     </div>
   );
