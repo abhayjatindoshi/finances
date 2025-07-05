@@ -9,7 +9,10 @@ body {
   padding: 0;
   border: 0;
   outline: none;
-  background-color: black;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -22,7 +25,7 @@ svg {
 }
 
 .app-content-height {
-  height: calc(100vh - var(--ant-layout-header-height));
+  height: calc(100vh - 4rem);
   overflow: auto;
 }
 
@@ -78,4 +81,70 @@ svg {
 
 .ag-cell-editor-autocomplete>div.selected {
   background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Custom Button Styles */
+.custom-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.custom-button .button-icon {
+  font-size: 1.2em;
+  width: 1.2em;
+  height: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.custom-button:active:not(:disabled) {
+  transform: translateY(0px);
+}
+
+.custom-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Primary button hover */
+.custom-button[data-type="primary"]:hover:not(:disabled) {
+  background: linear-gradient(135deg, #106ebe 0%, #005a9e 50%, #004578 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 120, 212, 0.4) !important;
+}
+
+/* Subtle button hover */
+.custom-button[data-type="subtle"]:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Danger button hover */
+.custom-button[data-type="danger"]:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #7f1d1d 100%) !important;
+  box-shadow: 0 4px 12px rgba(209, 52, 56, 0.4) !important;
+}
+
+/* Pulse animation for category badges */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+/* Make Input components expand to fill container */
+.flex-1 .fui-Input {
+  width: 100%;
+}
+
+.flex-1 .fui-Input__input {
+  width: 100%;
 }

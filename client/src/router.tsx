@@ -1,23 +1,29 @@
 import { createBrowserRouter } from "react-router-dom";
 import AppLayout from "./common/AppLayout";
 import App from "./pages/App";
-import BudgetPage from "./pages/budget/BudgetPage";
+import BudgetPage from "./pages/BudgetPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import ErrorPage from "./pages/ErrorPage";
 import RedirectToPage from "./pages/RedirectToPage";
-import AccountSettings from "./pages/settings/accounts/AccountSettings";
-import AccountsSettingsPage from "./pages/settings/accounts/AccountsSettingsPage";
-import BudgetSettingsPage from "./pages/settings/budget/BudgetSettingsPage";
-import CategorySettings from "./pages/settings/budget/CategorySettings";
+import AccountsSettingsPage from "./pages/settings/AccountsSettingsPage";
+import HouseholdSettingsPage from "./pages/settings/HouseholdSettingsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import TenantSettings from "./pages/settings/tenant/TenantSettings";
+import TenantsPage from "./pages/TenantsPage";
+import ImportTransactionsPage from "./pages/transactions/import/ImportTransactionsPage";
 import TransactionsPage from "./pages/transactions/TransactionsPage";
+
+// Detect if we're running under /new prefix
+const basename = process.env.PUBLIC_URL || '';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <App />,
     children: [
+      {
+        path: 'tenants',
+        element: <TenantsPage />
+      },
       {
         path: 'tenants/:tenantId',
         element: <AppLayout />,
@@ -29,46 +35,44 @@ const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <DashboardPage />,
-          }, {
+          }, 
+          {
             path: 'transactions',
             element: <RedirectToPage to='transactions/all' />,
-          }, {
+          }, 
+          {
+            path: 'transactions/all',
+            element: <TransactionsPage />
+          },
+          {
             path: 'transactions/:accountId',
             element: <TransactionsPage />
-          }, {
+          },
+          {
+            path: 'import',
+            element: <ImportTransactionsPage />
+          },
+          {
             path: 'budget',
             element: <BudgetPage />,
-          }, {
+          }, 
+          {
             path: 'budget/:tab',
             element: <BudgetPage />,
-          }, {
+          }, 
+          {
             path: 'settings',
             element: <SettingsPage />,
-            children: [
-              {
-                path: 'accounts',
-                element: <AccountsSettingsPage />,
-                children: [
-                  {
-                    path: ':accountId',
-                    element: <AccountSettings />,
-                  }
-                ]
-              }, {
-                path: 'budget',
-                element: <BudgetSettingsPage />,
-                children: [
-                  {
-                    path: ':categoryId',
-                    element: <CategorySettings />
-                  }
-                ]
-              }, {
-                path: 'tenant',
-                element: <TenantSettings />,
-              }
-            ]
-          }, {
+          }, 
+          {
+            path: 'settings/accounts',
+            element: <AccountsSettingsPage />,
+          },
+          {
+            path: 'settings/household',
+            element: <HouseholdSettingsPage />,
+          },
+          {
             element: <ErrorPage />
           }
         ]
@@ -76,5 +80,7 @@ const router = createBrowserRouter([
     ],
     errorElement: <ErrorPage />
   }
-]);
+], {
+  basename: basename
+});
 export default router;

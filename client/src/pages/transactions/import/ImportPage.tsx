@@ -1,17 +1,17 @@
-import { CheckOutlined, CloseCircleOutlined, ImportOutlined, InboxOutlined, LoadingOutlined } from '@ant-design/icons';
-import { Card, Table, Typography, Upload } from 'antd';
+import { Card, Spinner, Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow, Text } from '@fluentui/react-components';
+import { ArrowImportRegular, CheckmarkRegular, DismissCircleRegular, DocumentRegular } from '@fluentui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Account from '../../../db/models/Account';
+import { useParams } from 'react-router-dom';
 import IconButton from '../../../common/IconButton';
 import Money from '../../../common/Money';
-import database from '../../../db/database';
-import Tranasction from '../../../db/models/Transaction';
-import TableName from '../../../db/TableName';
 import Time from '../../../common/Time';
-import { useParams } from 'react-router-dom';
-import importService, { CompatibleBank } from '../../../services/import/import-service';
+import database from '../../../db/database';
+import Account from '../../../db/models/Account';
+import Transaction from '../../../db/models/Transaction';
+import TableName from '../../../db/TableName';
 import { ImportedData, ImportedTransaction } from '../../../services/import/import-adapter';
+import importService, { CompatibleBank } from '../../../services/import/import-service';
 
 interface ImportPageProps {
   account: Account;
@@ -31,18 +31,17 @@ enum ImportStatus {
 const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
 
   const { t } = useTranslation();
-  const { Column } = Table;
-  const { Dragger } = Upload;
-  const { Text } = Typography;
   const { tenantId } = useParams();
   const [status, setStatus] = React.useState<ImportStatus>(ImportStatus.Waiting);
   const [compatibleBanks, setCompatibleBanks] = React.useState<Array<CompatibleBank>>([]);
   const [importedData, setImportedData] = React.useState<ImportedData | undefined>();
   const [selectedTransactions, setSelectedTransactions] = React.useState<Array<ImportedTransaction>>([]);
 
-  function handleUpload(file: File): boolean {
-    importTransactions(file);
-    return false;
+  function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (file) {
+      importTransactions(file);
+    }
   }
 
   async function importTransactions(file: File) {
@@ -73,7 +72,7 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
     if (!tenantId) return;
     if (selectedTransactions.length === 0) return;
     database(tenantId).write(async () => {
-      const transactionCollection = database(tenantId).collections.get<Tranasction>(TableName.Transactions);
+      const transactionCollection = database(tenantId).collections.get<Transaction>(TableName.Transactions);
       const promises = selectedTransactions.map(transaction => transactionCollection.create(t => {
         t.account.set(account);
         t.transactionAt = transaction.transactionAt;
@@ -89,22 +88,31 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
   return (
     <>
       {status === ImportStatus.Waiting &&
-        <Dragger className='block w-full' multiple={false} maxCount={1} beforeUpload={handleUpload}>
-          <p className='ant-upload-drag-icon'>
-            <InboxOutlined />
-          </p>
-          <p className='ant-upload-text'>{t('app.uploadText')}</p>
-          <p className='ant-upload-hint'>{t('app.uploadHint')}</p>
-        </Dragger>
+        <div className='block w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center'>
+          <input
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="file-upload"
+          />
+          <label htmlFor="file-upload" className="cursor-pointer">
+            <div className='text-4xl mb-4'>
+              <DocumentRegular />
+            </div>
+            <div className='text-lg font-semibold'>{t('app.uploadText')}</div>
+            <div className='text-sm text-gray-500'>{t('app.uploadHint')}</div>
+          </label>
+        </div>
       }
 
       {status === ImportStatus.Detecting &&
         <div className='flex flex-col items-center gap-4'>
           <div className='flex flex-row items-center'>
-            <LoadingOutlined className='text-2xl mr-2' />
+            <Spinner size="medium" className='mr-2' />
             <div>{t('app.detectingFormat')}...</div>
           </div>
-          <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
+          <IconButton icon={<DismissCircleRegular />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
         </div>
       }
 
@@ -116,10 +124,10 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
               <div>{t('app.formatNotDetected')}</div>
               <div className='flex flex-row gap-4'>
                 {compatibleBanks.map(bank =>
-                  <Card key={bank.name} className='cursor-pointer' hoverable onClick={() => readData(bank)} >{bank.name}</Card>
+                  <Card key={bank.name} className='cursor-pointer hover:shadow-lg' onClick={() => readData(bank)} >{bank.name}</Card>
                 )}
               </div>
-              <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
+              <IconButton icon={<DismissCircleRegular />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
             </>
           }
         </div>
@@ -128,10 +136,10 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
       {status === ImportStatus.Reading &&
         <div className='flex flex-col items-center gap-4'>
           <div className='flex flex-row items-center'>
-            <LoadingOutlined className='text-2xl mr-2' />
+            <Spinner size="medium" className='mr-2' />
             <div>{t('app.readingTransactions')}...</div>
           </div>
-          <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
+          <IconButton icon={<DismissCircleRegular />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
         </div>
       }
 
@@ -145,15 +153,29 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
               <div><b>Selected Transactions:</b> {selectedTransactions.length} </div>
             </div>
             <div className='flex flex-row gap-2'>
-              <IconButton icon={<ImportOutlined />} type="primary" disabled={selectedTransactions.length === 0} onClick={importData}>{t('app.import')}</IconButton>
-              <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
+              <IconButton icon={<ArrowImportRegular />} appearance="primary" disabled={selectedTransactions.length === 0} onClick={importData}>{t('app.import')}</IconButton>
+              <IconButton icon={<DismissCircleRegular />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.cancel')}</IconButton>
             </div>
           </div>
-          <Table dataSource={importedData?.transactions} pagination={false} size='small' rowSelection={{ type: 'checkbox', onChange: (_, selectedTransactions) => setSelectedTransactions(selectedTransactions) }} rowKey="id">
-            <Column title={t('app.time')} dataIndex='transactionAt' key='transactionAt' render={(transactionAt: Date) => <Time time={transactionAt} />} />
-            <Column title={t('app.title')} dataIndex='title' key='title' render={(title: string) => <Text ellipsis className='w-48'>{title}</Text>} />
-            <Column title={t('app.withdraw')} dataIndex='amount' key='amount' className='text-right' render={(amount: number) => amount < 0 ? <Money amount={-amount} /> : ''} />
-            <Column title={t('app.deposit')} dataIndex='amount' key='amount' className='text-right' render={(amount: number) => { return amount > 0 ? <Money amount={(amount)} /> : '' }} />
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHeaderCell>{t('app.time')}</TableHeaderCell>
+                <TableHeaderCell>{t('app.title')}</TableHeaderCell>
+                <TableHeaderCell>{t('app.withdraw')}</TableHeaderCell>
+                <TableHeaderCell>{t('app.deposit')}</TableHeaderCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {importedData?.transactions.map((transaction, index) => (
+                <TableRow key={index}>
+                  <TableCell><Time time={transaction.transactionAt} /></TableCell>
+                  <TableCell><Text truncate className='w-48'>{transaction.title}</Text></TableCell>
+                  <TableCell className='text-right'>{transaction.amount < 0 ? <Money amount={-transaction.amount} /> : ''}</TableCell>
+                  <TableCell className='text-right'>{transaction.amount > 0 ? <Money amount={transaction.amount} /> : ''}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
         </div>
       }
@@ -161,20 +183,20 @@ const ImportPage: React.FC<ImportPageProps> = ({ account, onClose }) => {
       {status === ImportStatus.Completed &&
         <div className='flex flex-col items-center gap-4'>
           <div className='flex flex-row items-center gap-2'>
-            <CheckOutlined className='text-2xl' />
+            <CheckmarkRegular className='text-2xl' />
             {selectedTransactions.length} {t('app.transactionsImported')}
           </div>
-          <IconButton icon={<CloseCircleOutlined />} onClick={() => { setStatus(ImportStatus.Waiting); onClose && onClose(); }}>{t('app.close')}</IconButton>
+          <IconButton icon={<DismissCircleRegular />} onClick={() => { setStatus(ImportStatus.Waiting); onClose && onClose(); }}>{t('app.close')}</IconButton>
         </div>
       }
 
       {status === ImportStatus.Error &&
         <div className='flex flex-col items-center gap-4'>
           <div className='flex flex-row items-center gap-2'>
-            <CloseCircleOutlined className='text-2xl' />
+            <DismissCircleRegular className='text-2xl' />
             {t('app.formatNotSupported')}
           </div>
-          <IconButton icon={<CloseCircleOutlined />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.close')}</IconButton>
+          <IconButton icon={<DismissCircleRegular />} onClick={() => setStatus(ImportStatus.Waiting)}>{t('app.close')}</IconButton>
         </div>
       }
     </>
