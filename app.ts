@@ -1,8 +1,8 @@
-import { errorHandler, loadRouters } from './src/server-utils';
-import { setupAuthentication } from './src/services/passport';
-import path from 'path';
 import bodyParser from 'body-parser';
 import express from 'express';
+import path from 'path';
+import { errorHandler, loadRouters } from './src/server-utils';
+import { setupAuthentication } from './src/services/passport';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -15,9 +15,17 @@ app.use('/api', errorHandler)
 
 // frontend html5 configuration
 app.use(express.static('dist/static'));
+
+// Handle main app routes
 app.use((req, res) => {
-    const indexFile = path.resolve('dist/static/index.html')
-    res.sendFile(indexFile)
+    // Check if the request is for the /new route
+    if (req.path.startsWith('/new')) {
+        const indexFile = path.resolve('dist/static/new/index.html')
+        res.sendFile(indexFile)
+    } else {
+        const indexFile = path.resolve('dist/static/index.html')
+        res.sendFile(indexFile)
+    }
 })
 
 app.listen(port, () => {

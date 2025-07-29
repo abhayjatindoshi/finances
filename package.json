@@ -24,6 +24,8 @@
   "homepage": "https://github.com/abhayjatindoshi/finances#readme",
   "description": "",
   "dependencies": {
+    "@fluentui/react-charts": "^9.1.9",
+    "@fluentui/react-components": "^9.67.0",
     "body-parser": "^1.20.3",
     "express": "^5.0.1",
     "express-session": "^1.18.1",
