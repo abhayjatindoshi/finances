@@ -65,9 +65,9 @@ jobs:
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
+        uses: azure/webapps-deploy@v3
         with:
-          app-name: 'finances-app'
+          app-name: 'money-app'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_56FC50D6D7B64D4FA03E4745DFE2BDCF }}
           package: .
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_56FC50D6D7B64D4FA03E4745DFE2BDCF }}
