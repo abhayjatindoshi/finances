@@ -117,7 +117,6 @@ const resources = {
       'app.removing': 'Removing',
       'app.cannotRemoveLastUser': 'Cannot remove last user',
       'app.cannotRemoveSelf': 'Cannot remove yourself',
-      'app.switchToOldUI': 'Switch to Old UI',
     }
   }
 }
