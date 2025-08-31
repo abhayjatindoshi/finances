@@ -1,6 +1,7 @@
 
 import { tokens } from '@fluentui/react-components';
 import React from 'react';
+import { Dialog, DialogBody, DialogContent, DialogSurface } from '../../../common/Dialog';
 import { moneyFormat } from '../../../constants';
 import { CategoryType } from '../../../db/models/Category';
 
@@ -22,6 +23,14 @@ type Props = {
 };
 
 const AlertsPanel: React.FC<Props> = ({ hovered, setHovered, cardBaseStyle, cardHoverStyle, budgetData, loading }) => {
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  type Alert = {
+    message: string;
+    value: string | number;
+    accent: string;
+    icon: string;
+  };
+  const [selectedAlert, setSelectedAlert] = React.useState<Alert | null>(null);
   const getCurrentMonth = () => new Date().getMonth();
   const currentMonth = getCurrentMonth();
 
@@ -235,22 +244,27 @@ const AlertsPanel: React.FC<Props> = ({ hovered, setHovered, cardBaseStyle, card
           <div style={{ color: tokens.colorNeutralForeground3, fontSize: 15, padding: '12px 0' }}>No alerts</div>
         )}
         {sortedAlerts.map((alert, idx) => (
-          <div key={idx} style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'rgba(24,28,36,0.92)',
-            borderRadius: 12,
-            padding: '12px 16px',
-            boxShadow: '0 2px 8px #0006',
-            borderLeft: `4px solid ${alert.accent}`,
-            fontSize: 15,
-            fontWeight: 500,
-            color: tokens.colorNeutralForegroundOnBrand,
-            minHeight: 44,
-            gap: 14,
-            cursor: 'pointer',
-          }}
+          <div key={idx}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'rgba(24,28,36,0.92)',
+              borderRadius: 12,
+              padding: '12px 16px',
+              boxShadow: '0 2px 8px #0006',
+              borderLeft: `4px solid ${alert.accent}`,
+              fontSize: 15,
+              fontWeight: 500,
+              color: tokens.colorNeutralForegroundOnBrand,
+              minHeight: 44,
+              gap: 14,
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              setSelectedAlert(alert);
+              setDialogOpen(true);
+            }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{fontSize: 22, marginRight: 2}}>{alert.icon}</span>
@@ -261,6 +275,215 @@ const AlertsPanel: React.FC<Props> = ({ hovered, setHovered, cardBaseStyle, card
             )}
           </div>
         ))}
+        {/* Dialog for alert details */}
+        <Dialog open={dialogOpen} onOpenChange={(_, data) => setDialogOpen(data.open)}>
+          <DialogSurface>
+            <DialogBody>
+              <DialogContent>
+                <div style={{ minWidth: 320, minHeight: 60 }}>
+                  {selectedAlert && (
+                    <>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>{selectedAlert.icon}</div>
+                      <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 8 }}>{selectedAlert.message}</div>
+                      {selectedAlert.value && (
+                        <div style={{ fontSize: 22, color: selectedAlert.accent, marginBottom: 12 }}>{selectedAlert.value}</div>
+                      )}
+                      {/* Show detailed data for each alert type with improved UX */}
+                      <div style={{ marginTop: 12, maxHeight: 320, overflowY: 'auto' }}>
+                        {(() => {
+                          // Helper for table row
+                          type TableRowProps = {
+                            name: string;
+                            percent?: number;
+                            limit?: number;
+                            total?: number;
+                            thisMonth?: number;
+                            lastMonth?: number;
+                            highlight?: string;
+                          };
+                          const TableRow: React.FC<TableRowProps> = ({ name, percent, limit, total, thisMonth, lastMonth, highlight }) => (
+                            <tr style={{ background: highlight, borderRadius: 8 }}>
+                              <td style={{ fontWeight: 600, padding: '6px 8px', minWidth: 120 }}>{name}</td>
+                              {percent !== undefined && <td style={{ color: percent >= 100 ? '#f87171' : percent >= 80 ? '#fbbf24' : undefined, fontWeight: 700, padding: '6px 8px', textAlign: 'right' }}>{percent.toFixed(1)}%</td>}
+                              {limit !== undefined && <td style={{ padding: '6px 8px', textAlign: 'right' }}>{moneyFormat.format(limit)}</td>}
+                              {total !== undefined && <td style={{ padding: '6px 8px', textAlign: 'right' }}>{moneyFormat.format(total)}</td>}
+                              {thisMonth !== undefined && <td style={{ padding: '6px 8px', textAlign: 'right' }}>{moneyFormat.format(thisMonth)}</td>}
+                              {lastMonth !== undefined && <td style={{ padding: '6px 8px', textAlign: 'right' }}>{moneyFormat.format(lastMonth)}</td>}
+                            </tr>
+                          );
+                          // Over budget
+                          if (selectedAlert.icon === '🚨' && selectedAlert.message.includes('Over budget')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Categories over budget:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Category</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>% Used</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Limit</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Total</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {overBudgetCategories.map(cat => (
+                                      <TableRow key={cat.category.id} name={cat.category.name} percent={cat.budgetPercentage} limit={cat.yearlyLimit} total={cat.total} highlight={'#f8717115'} />
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // Near budget
+                          if (selectedAlert.icon === '⚠️' && selectedAlert.message.includes('Close to budget')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Categories close to budget:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Category</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>% Used</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Limit</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Total</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {nearBudgetCategories.map(cat => (
+                                      <TableRow key={cat.category.id} name={cat.category.name} percent={cat.budgetPercentage} limit={cat.yearlyLimit} total={cat.total} highlight={'#fbbf2415'} />
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // No budget set
+                          if (selectedAlert.icon === 'ℹ️' && selectedAlert.message.includes('No budget set')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Categories with no budget set:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Category</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {noBudgetCategories.map(cat => (
+                                      <TableRow key={cat.category.id} name={cat.category.name} />
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // No spending this month
+                          if (selectedAlert.icon === 'ℹ️' && selectedAlert.message.includes('No spending')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Categories with no spending this month:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Category</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Limit</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {noSpendingCategories.map(cat => (
+                                      <TableRow key={cat.category.id} name={cat.category.name} limit={cat.yearlyLimit} />
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // Unusual spend
+                          if (selectedAlert.icon === '🚨' && selectedAlert.message.includes('Unusual spend')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Categories with unusual spend this month:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Category</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>This Month</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {unusualSpendCategories.map(cat => (
+                                      <TableRow key={cat.category.id} name={cat.category.name} thisMonth={cat.monthlyTotal?.[currentMonth] || 0} highlight={'#f8717115'} />
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // Overspending trend
+                          if ((selectedAlert.icon === '⚡' || selectedAlert.icon === '⚠️') && selectedAlert.message.includes('Spending is increasing')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Categories with increasing spending:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Category</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Last Month</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>This Month</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {overspendingTrendCategories.map(cat => (
+                                      <TableRow key={cat.category.id} name={cat.category.name} lastMonth={cat.monthlyTotal?.[currentMonth-1] || 0} thisMonth={cat.monthlyTotal?.[currentMonth] || 0} highlight={'#fbbf2415'} />
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // No income this month
+                          if (selectedAlert.icon === 'ℹ️' && selectedAlert.message.includes('No income')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>No income recorded in any income category this month.</div>
+                              </>
+                            );
+                          }
+                          // High income month
+                          if (selectedAlert.icon === '💰' && selectedAlert.message.includes('income is higher')) {
+                            return (
+                              <>
+                                <div style={{ fontWeight: 500, marginBottom: 10, fontSize: 16 }}>Income by month:</div>
+                                <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                                  <thead>
+                                    <tr style={{ background: '#181c24', color: '#fff' }}>
+                                      <th style={{ textAlign: 'left', padding: '6px 8px' }}>Month</th>
+                                      <th style={{ textAlign: 'right', padding: '6px 8px' }}>Amount</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {incomeMonthlyTotals.map((amt, idx) => (
+                                      <tr key={idx} style={{ fontWeight: idx === currentMonth ? 700 : 400, color: idx === currentMonth ? '#60a5fa' : undefined }}>
+                                        <td style={{ padding: '6px 8px' }}>{`Month ${idx+1}`}</td>
+                                        <td style={{ padding: '6px 8px', textAlign: 'right' }}>{moneyFormat.format(amt)}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </>
+                            );
+                          }
+                          // Default
+                          return <div>No further details available.</div>;
+                        })()}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </DialogContent>
+            </DialogBody>
+          </DialogSurface>
+        </Dialog>
       </div>
     </div>
   );

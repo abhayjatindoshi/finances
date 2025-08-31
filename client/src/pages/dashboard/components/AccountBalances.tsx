@@ -9,6 +9,7 @@ import { Link, useParams } from 'react-router-dom';
 import { dateTimeFormat, moneyFormat } from '../../../constants';
 import database from '../../../db/database';
 import Account from '../../../db/models/Account';
+import Tranasction from '../../../db/models/Transaction';
 import TableName from '../../../db/TableName';
 import { pickRandomByHash } from '../../../utils/Common';
 import { AccountBalance, getBalanceMap } from '../../../utils/DbUtils';
@@ -118,20 +119,89 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
   const { tenantId } = useParams();
   const { t } = useTranslation();
   const [balanceMap, setBalanceMap] = React.useState<Map<Account, AccountBalance>>(new Map());
+  const [transactionMap, setTransactionMap] = React.useState<Map<string, Tranasction[]>>(new Map());
 
   useEffect(() => {
-    const fetchBalances = async () => {
+    const fetchBalancesAndTransactions = async () => {
       if (!tenantId) return;
       const balances = await getBalanceMap(tenantId);
       setBalanceMap(balances);
+      // Fetch transactions for all accounts
+      const txCollection = database(tenantId).collections.get<Tranasction>('transactions');
+      const txs = await txCollection.query().fetch();
+      const map = new Map<string, Tranasction[]>();
+      accounts.forEach(account => {
+        map.set(
+          account.id,
+          txs.filter(tx => tx.account.id === account.id)
+            .sort((a, b) => a.transactionAt.getTime() - b.transactionAt.getTime())
+        );
+      });
+      setTransactionMap(map);
     };
-    fetchBalances();
+    fetchBalancesAndTransactions();
   }, [accounts, tenantId]);
+
+  // Helper to get balance history for an account using real transactions
+  function getBalanceHistory(account: Account, points = 16): number[] {
+    const txs = transactionMap.get(account.id) || [];
+    // Always include the initial balance as the first point
+    const running: number[] = [account.initialBalance];
+    let bal = account.initialBalance;
+    for (const tx of txs) {
+      bal += tx.amount;
+      running.push(bal);
+    }
+    // If there are fewer than 2 points, flat line
+    if (running.length < 2) {
+      return Array(points).fill(account.initialBalance);
+    }
+    // Interpolate to fit exactly 'points' samples
+    const result: number[] = [];
+    for (let i = 0; i < points; i++) {
+      const pos = (i * (running.length - 1)) / (points - 1);
+      const idx = Math.floor(pos);
+      const frac = pos - idx;
+      if (idx + 1 < running.length) {
+        result.push(running[idx] * (1 - frac) + running[idx + 1] * frac);
+      } else {
+        result.push(running[running.length - 1]);
+      }
+    }
+    return result;
+  }
 
   function AccountCard({ account }: { account: Account }) {
     const [hover, setHover] = React.useState(false);
+    const [cardWidth, setCardWidth] = React.useState(200); // default minWidth
+    const cardRef = React.useRef<HTMLDivElement>(null);
     const backgroundColor = pickRandomByHash(account.name, accountCardColors);
-    
+
+    // Responsive: measure card width
+    React.useLayoutEffect(() => {
+      if (cardRef.current) {
+        setCardWidth(cardRef.current.offsetWidth);
+      }
+    }, []);
+
+  // Chart data
+  const history = getBalanceHistory(account, 16);
+  const min = Math.min(...history);
+  const max = Math.max(...history);
+  // Chart occupies bottom 3/4 of the card
+  const pad = 8;
+  const w = cardWidth, h = 80; // even taller SVG for more area
+  // Place chart in bottom 3/4: top padding is 1/4 of the SVG height
+  const chartPadTop = Math.floor(h / 4);
+  const chartPadBottom = pad;
+    // Normalize points
+    const pointsArr = history.map((v, i) => {
+      const x = pad + ((w - 2 * pad) * i) / (history.length - 1);
+      const y = h - chartPadBottom - ((h - chartPadTop - chartPadBottom) * (v - min)) / (max - min || 1);
+      return [x, y];
+    });
+    const points = pointsArr.map(([x, y]) => `${x},${y}`).join(' ');
+
     // Create subtle gradient with transparency using CSS custom properties
     const subtleGradient = `linear-gradient(135deg, 
       color-mix(in srgb, ${backgroundColor} 25%, transparent) 0%, 
@@ -161,6 +231,33 @@ const AccountBalances: React.FC<AccountBalancesProps> = ({ accounts }) => {
               : `0 4px 12px color-mix(in srgb, ${backgroundColor} 20%, transparent), inset 0 1px 0 color-mix(in srgb, ${backgroundColor} 30%, transparent)`,
           }}
         >
+          {/* SVG line chart background - bottom half */}
+          <div ref={cardRef} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: h, zIndex: 0, pointerEvents: 'none' }}>
+            <svg width={w} height={h} style={{ width: '100%', height: h, opacity: 0.32, display: 'block' }}>
+              {/* Subtle background below the line */}
+              <defs>
+                <linearGradient id={`area-gradient-${account.id}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={backgroundColor} stopOpacity="0.18" />
+                  <stop offset="100%" stopColor={backgroundColor} stopOpacity="0.04" />
+                </linearGradient>
+              </defs>
+              <polygon
+                points={
+                  pointsArr.map(([x, y]) => `${x},${y}`).join(' ') +
+                  ` ${w - pad},${h - chartPadBottom} ${pad},${h - chartPadBottom}`
+                }
+                fill={`url(#area-gradient-${account.id})`}
+                opacity={1}
+              />
+              <polyline
+                fill="none"
+                stroke={backgroundColor}
+                strokeWidth={3.2}
+                points={points}
+                style={{ filter: 'blur(0.2px)', opacity: 0.85 }}
+              />
+            </svg>
+          </div>
           <div 
             className={styles.accountCardGradient}
             style={{ 
