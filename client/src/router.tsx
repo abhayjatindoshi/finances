@@ -8,6 +8,7 @@ import RedirectToPage from "./pages/RedirectToPage";
 import DataAccountsSettingsPage from "./pages/settings/data/DataAccountsSettingsPage";
 import DataBudgetSettingsPage from "./pages/settings/data/DataBudgetSettingsPage";
 import DataClassificationSettingsPage from "./pages/settings/data/DataClassificationSettingsPage";
+import ExportPage from "./pages/settings/ExportPage";
 import HouseholdSettingsPage from "./pages/settings/household/HouseholdSettingsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
 import TenantsPage from "./pages/TenantsPage";
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
           {
             path: 'settings/household',
             element: <HouseholdSettingsPage />,
+          },
+          {
+            path: 'settings/export',
+            element: <ExportPage />
           },
           {
             path: 'settings/data/accounts',
