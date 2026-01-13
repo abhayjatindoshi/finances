@@ -7,6 +7,7 @@ import { fluentColors } from '../../../constants';
 import { pickRandomByHash } from '../../../utils/Common';
 import { CategoryData, getBudgetData } from '../../../utils/DbUtils';
 import CategoryDeepDiveDialog from '../components/CategoryDeepDiveDialog';
+import CategoryLineChart from '../components/CategoryLineChart';
 
 
 const BudgetCategoriesPage: React.FC = () => {
@@ -38,18 +39,28 @@ const BudgetCategoriesPage: React.FC = () => {
     return <div>Please select a tenant.</div>;
   }
 
+  // Calculate global first and last transaction date
+  let globalFirstTx: Date | null = null;
+  let globalLastTx: Date | null = null;
+  budgetData.forEach(cat => {
+    cat.transactions.forEach(tx => {
+      if (!globalFirstTx || tx.transactionAt < globalFirstTx) globalFirstTx = tx.transactionAt;
+      if (!globalLastTx || tx.transactionAt > globalLastTx) globalLastTx = tx.transactionAt;
+    });
+  });
+
   // Main summary view
   return (
     <>
       <div style={{
         width: '100vw',
-      minHeight: '100vh',
-      maxWidth: '100%',
-      padding: '16px 0',
-      position: 'relative',
-      zIndex: 0,
-      overflowX: 'hidden',
-    }}>
+        minHeight: '100vh',
+        maxWidth: '100%',
+        padding: '16px 0',
+        position: 'relative',
+        zIndex: 0,
+        overflowX: 'hidden',
+      }}>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -57,29 +68,84 @@ const BudgetCategoriesPage: React.FC = () => {
         width: '100%',
         padding: '0 24px',
       }}>
-        {budgetData.map((cat, idx) => {
+        {[...budgetData]
+          .sort((a, b) => {
+            const aProgress = a.yearlyLimit > 0 ? Math.abs(a.total) / a.yearlyLimit : 0;
+            const bProgress = b.yearlyLimit > 0 ? Math.abs(b.total) / b.yearlyLimit : 0;
+            return bProgress - aProgress;
+          })
+          .map((cat, idx) => {
           const progress = cat.yearlyLimit > 0 ? Math.abs(cat.total) / cat.yearlyLimit : 0;
           // Color scale logic
-          let neonGradient, dotGradient, dotShadow;
+          // Define all gradient color pairs for chart (matching progress bar states)
+          const chartGradients: [string, string][] = [
+            ['#ff3333', '#ff6666'], // >100% overspent (brighter red)
+            ['#ff3c3c', '#ffb347'], // 80-100% warning
+            ['#ffe156', '#ffb347'], // 60-80% caution
+            ['#3cff7a', '#56e0ff'], // <60% safe
+          ];
+          let neonGradient, dotGradient, dotShadow, chartGradient;
           if (progress * 100 > 100) {
             neonGradient = 'linear-gradient(90deg, #7a1f1f 0%, #ff3c3c 100%)';
             dotGradient = 'radial-gradient(circle, #fff 0%, #7a1f1f 60%, #ff3c3c 100%)';
             dotShadow = '0 0 24px 6px #7a1f1fcc, 0 0 48px 12px #ff3c3c77';
+            chartGradient = chartGradients[0];
           } else if (progress * 100 >= 80) {
             neonGradient = 'linear-gradient(90deg, #ff3c3c 0%, #ffb347 100%)';
             dotGradient = 'radial-gradient(circle, #fff 0%, #ff3c3c 60%, #ffb347 100%)';
             dotShadow = '0 0 24px 6px #ff3c3ccc, 0 0 48px 12px #ffb34777';
+            chartGradient = chartGradients[1];
           } else if (progress * 100 >= 60) {
             neonGradient = 'linear-gradient(90deg, #ffe156 0%, #ffb347 100%)';
             dotGradient = 'radial-gradient(circle, #fff 0%, #ffe156 60%, #ffb347 100%)';
             dotShadow = '0 0 24px 6px #ffe156cc, 0 0 48px 12px #ffb34777';
+            chartGradient = chartGradients[2];
           } else {
             neonGradient = 'linear-gradient(90deg, #3cff7a 0%, #56e0ff 100%)';
             dotGradient = 'radial-gradient(circle, #fff 0%, #3cff7a 60%, #56e0ff 100%)';
             dotShadow = '0 0 24px 6px #3cff7acc, 0 0 48px 12px #56e0ff77';
+            chartGradient = chartGradients[3];
           }
           const amountLeft = cat.yearlyLimit - Math.abs(cat.total);
           const percentLeft = cat.yearlyLimit > 0 ? (amountLeft / cat.yearlyLimit) * 100 : 0;
+
+          // --- Compute monthly spend history from global first/last transaction month ---
+          let history: number[] = [];
+          if (globalFirstTx && globalLastTx) {
+            const startYear = globalFirstTx.getFullYear();
+            const startMonth = globalFirstTx.getMonth();
+            const endYear = globalLastTx.getFullYear();
+            const endMonth = globalLastTx.getMonth();
+            const monthsCount = (endYear - startYear) * 12 + (endMonth - startMonth) + 1;
+            const monthly: number[] = [];
+            for (let i = 0; i < monthsCount; i++) {
+              const year = startYear + Math.floor((startMonth + i) / 12);
+              const month = (startMonth + i) % 12;
+              const monthStart = new Date(year, month, 1);
+              const monthEnd = new Date(year, month + 1, 0, 23, 59, 59, 999);
+              const total = cat.transactions
+                .filter(tx => tx.transactionAt >= monthStart && tx.transactionAt <= monthEnd)
+                .reduce((sum, tx) => sum + tx.amount, 0);
+              monthly.push(Math.abs(total));
+            }
+            // Interpolate monthly data to 50 points for clarity
+            const points = 50;
+            if (monthly.length <= 1) {
+              history = Array(points).fill(monthly[0] || 0);
+            } else {
+              for (let i = 0; i < points; i++) {
+                const pos = (i * (monthly.length - 1)) / (points - 1);
+                const idx = Math.floor(pos);
+                const frac = pos - idx;
+                if (idx + 1 < monthly.length) {
+                  history.push(monthly[idx] * (1 - frac) + monthly[idx + 1] * frac);
+                } else {
+                  history.push(monthly[monthly.length - 1]);
+                }
+              }
+            }
+          }
+
           return (
             <Card
               key={cat.category.id}
@@ -102,6 +168,8 @@ const BudgetCategoriesPage: React.FC = () => {
                 width: '100%',
                 cursor: 'pointer',
                 transition: 'box-shadow 0.2s, transform 0.2s',
+                position: 'relative',
+                overflow: 'hidden',
               }}
               onClick={() => handleCategoryClick(cat)}
               onMouseOver={e => {
@@ -113,21 +181,46 @@ const BudgetCategoriesPage: React.FC = () => {
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
-                <CustomAvatar
-                  size={44}
-                  char={cat.category.name.charAt(0)}
-                  shape="circle"
-                  color={pickRandomByHash(cat.category.name, fluentColors)}
+              {/* Category spend trend line chart as full-width, bottom-half background */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  width: '100%',
+                  height: '40%',
+                  zIndex: 0,
+                  pointerEvents: 'none',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                }}
+              >
+                <CategoryLineChart
+                  history={history}
+                  gradientColors={chartGradient}
+                  width={undefined}
+                  height={56} // 40% of minHeight 140
                 />
-                <div>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: tokens.colorNeutralForegroundOnBrand }}>{cat.category.name}</div>
-                  <div style={{ fontSize: 13, color: tokens.colorNeutralForegroundOnBrand, opacity: 0.7 }}>
-                    {percentLeft >= 0
-                      ? `${percentLeft.toFixed(1)}% left`
-                      : `${Math.abs(percentLeft).toFixed(1)}% overspent`}
+              </div>
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
+                  <CustomAvatar
+                    size={44}
+                    char={cat.category.name.charAt(0)}
+                    shape="circle"
+                    color={pickRandomByHash(cat.category.name, fluentColors)}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: tokens.colorNeutralForegroundOnBrand }}>{cat.category.name}</div>
+                    <div style={{ fontSize: 13, color: tokens.colorNeutralForegroundOnBrand, opacity: 0.7 }}>
+                      {percentLeft >= 0
+                        ? `${percentLeft.toFixed(1)}% left`
+                        : `${Math.abs(percentLeft).toFixed(1)}% overspent`}
+                    </div>
                   </div>
                 </div>
+                {/* ...existing card content... */}
               </div>
               {/* Cyberpunk Glassy Progress Bar */}
               <div style={{

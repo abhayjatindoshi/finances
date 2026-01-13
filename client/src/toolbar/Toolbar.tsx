@@ -1,5 +1,5 @@
 import { Menu, MenuItem, MenuList, MenuPopover, MenuTrigger } from "@fluentui/react-components";
-import { ArrowSwapRegular, ArrowUploadRegular, BuildingBankRegular, ChevronDownRegular, DataPieRegular, DesktopRegular, HomeRegular, SettingsRegular, SignOutRegular } from "@fluentui/react-icons";
+import { ArrowSwapRegular, ArrowUploadRegular, BuildingBankRegular, ChevronDownRegular, DataPieRegular, HomeRegular, SettingsRegular, SignOutRegular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -192,12 +192,6 @@ export default function Toolbar({ tenants = [] }: ToolbarProps) {
                     onClick={handleSync}
                   >
                     {t('app.sync')}
-                  </MenuItem>
-                  <MenuItem 
-                    icon={<DesktopRegular />}
-                    onClick={() => navigate('/')}
-                  >
-                    {t('app.switchToOldUI')}
                   </MenuItem>
                   <MenuItem 
                     icon={<SignOutRegular />}
