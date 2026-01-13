@@ -1,5 +1,5 @@
 import { Card, Text, tokens } from '@fluentui/react-components';
-import { BuildingBankRegular, MoneyRegular, PeopleRegular, TagRegular } from '@fluentui/react-icons';
+import { ArrowDownloadRegular, BuildingBankRegular, MoneyRegular, PeopleRegular, TagRegular } from '@fluentui/react-icons';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,6 +16,13 @@ const SettingsPage: React.FC = () => {
       icon: <PeopleRegular />,
       color: tokens.colorPalettePurpleBackground2,
       path: `/tenants/${tenantId}/settings/household`
+    },
+    {
+      id: 'export',
+      title: 'Export',
+      icon: <ArrowDownloadRegular />,
+      color: tokens.colorPaletteBeigeBackground2,
+      path: `/tenants/${tenantId}/settings/export`
     }
   ];
 
